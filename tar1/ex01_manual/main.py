@@ -12,7 +12,6 @@ def main(data_folder_name):
     # Set the path to config files and data files for the environment
     current_folder = os.path.abspath(os.getcwd())
     data_folder = os.path.abspath(os.path.join(current_folder, data_folder_name))
-
     
     # Instantiate the environment
     env = Env(data_folder)
@@ -39,6 +38,6 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         data_folder_name = sys.argv[1]
     else:
-        data_folder_name = os.path.join("datasets", "data_12x12_10vic")
+        data_folder_name = os.path.join("datasets", "data_12X12_10vic")
         
     main(data_folder_name)

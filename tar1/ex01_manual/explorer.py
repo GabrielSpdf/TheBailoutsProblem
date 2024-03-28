@@ -9,8 +9,6 @@ from abc import ABC, abstractmethod
 from vs.abstract_agent import AbstAgent
 from vs.constants import VS
 
-
-
 class Explorer(AbstAgent):
     def __init__(self, env, config_file, resc):
         """ Construtor do agente random on-line
@@ -22,7 +20,7 @@ class Explorer(AbstAgent):
         self.set_state(VS.ACTIVE)
         
         # Specific initialization for the rescuer
-        self.resc = resc           # reference to the rescuer agent   
+        self.resc = resc           # reference to the rescuer agent
     
     def deliberate(self) -> bool:
         """ The agent chooses the next action. The simulator calls this

@@ -73,7 +73,7 @@ class Explorer(AbstAgent):
         rtime_aft = self.get_rtime()
 
         # Test the result of the walk action
-        # Should never bump, but for safe functionning let's test
+        # Should never bump, but for safe functioning let's test
         if result == VS.BUMPED:
             # update the map with the wall
             self.map.add((self.x + dx, self.y + dy), VS.OBST_WALL, VS.NO_VICTIM, self.check_walls_and_lim())
