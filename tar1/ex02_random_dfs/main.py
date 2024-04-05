@@ -22,11 +22,22 @@ def main(data_folder_name):
     explorer_file = os.path.join(data_folder, "explorer_config.txt")
     
     # Instantiate agents rescuer and explorer
-    resc = Rescuer(env, rescuer_file)
+    resc1 = Rescuer(env, rescuer_file)
+    resc2 = Rescuer(env, rescuer_file)
+    resc3 = Rescuer(env, rescuer_file)
+    resc4 = Rescuer(env, rescuer_file)
 
     # Explorer needs to know rescuer to send the map
     # that's why rescuer is instatiated before
-    exp = Explorer(env, explorer_file, resc)
+    v1 = ['r', 'ur', 'u', 'ul', 'l', 'dl', 'l', 'dr']
+    v2 = ['r', 'dr', 'd', 'dl', 'l', 'ul', 'u', 'ur']
+    v3 = ['l', 'ul', 'u', 'ur', 'r', 'dr', 'd', 'dl']
+    v4 = ['l', 'dl', 'd', 'dr', 'r', 'ur', 'u', 'ul']
+
+    exp1 = Explorer(env, explorer_file, resc1, v1)
+    exp2 = Explorer(env, explorer_file, resc2, v2)
+    exp3 = Explorer(env, explorer_file, resc3, v3)
+    exp4 = Explorer(env, explorer_file, resc4, v4)
 
     # Run the environment simulator
     env.run()

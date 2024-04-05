@@ -2,7 +2,7 @@
 # @Author: Tacla, UTFPR
 #
 ### It walks randomly in the environment looking for victims. When half of the
-### exploration has gone, the explorer goes back to the base.
+### exploration has gone, the  goes back to the base.
 
 import sys
 import os
@@ -28,16 +28,16 @@ class Stack:
         return len(self.items) == 0
 
 class Explorer(AbstAgent):
-    def __init__(self, env, config_file, resc):
+    def __init__(self, env, config_file, resc, vec):
         """ Construtor do agente random on-line
         @param env: a reference to the environment 
-        @param config_file: the absolute path to the explorer's config file
+        @param config_file: the absolute path to the 's config file
         @param resc: a reference to the rescuer agent to invoke when exploration finishes
         """
 
         super().__init__(env, config_file)
         self.walk_stack = Stack()  # a stack to store the movements
-        self.set_state(VS.ACTIVE)  # explorer is active since the begin
+        self.set_state(VS.ACTIVE)  #  is active since the begin
         self.resc = resc           # reference to the rescuer agent
         self.x = 0                 # current x position relative to the origin 0
         self.y = 0                 # current y position relative to the origin 0
@@ -48,20 +48,20 @@ class Explorer(AbstAgent):
         # put the current position - the base - in the map
         self.map.add((self.x, self.y), 1, VS.NO_VICTIM, self.check_walls_and_lim())
 
-    def get_next_position(self):
-        """ Randomically, gets the next position that can be explored (no wall and inside the grid)
-            There must be at least one CLEAR position in the neighborhood, otherwise it loops forever.
-        """
+    def get_next_position(self, vec):
+        for i in range(8):
+            direction = vec[i]
+
+            if obstacles[direction] == VS.CLEAR && 
+                return Explorer.AC_INCR[direction]
+
+            #se tiver prioridade disponivel
+                #pega proxima prioridade
+            #se nao
+                #volta base 
+
         # Check the neighborhood walls and grid limits
         obstacles = self.check_walls_and_lim()
-    
-        # Loop until a CLEAR position is found
-        while True:
-            # Get a random direction
-            direction = random.randint(0, 7)
-            # Check if the corresponding position in walls_and_lim is CLEAR
-            if obstacles[direction] == VS.CLEAR:
-                return Explorer.AC_INCR[direction]
         
     def explore(self):
         # get an random increment for x and y       
