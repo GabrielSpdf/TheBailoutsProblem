@@ -29,15 +29,15 @@ def main(data_folder_name):
 
     # Explorer needs to know rescuer to send the map
     # that's why rescuer is instatiated before
-    v1 = ['r', 'ur', 'u', 'ul', 'l', 'dl', 'l', 'dr']
-    v2 = ['r', 'dr', 'd', 'dl', 'l', 'ul', 'u', 'ur']
-    v3 = ['l', 'ul', 'u', 'ur', 'r', 'dr', 'd', 'dl']
-    v4 = ['l', 'dl', 'd', 'dr', 'r', 'ur', 'u', 'ul']
+    v1 = [2, 1, 0, 7, 6, 5, 4, 3]
+    v2 = [2, 3, 4, 5, 6, 7, 0, 1]
+    v3 = [6, 7, 0, 1, 2, 3, 4, 5]
+    v4 = [6, 5, 4, 3, 2, 1, 0, 7]
 
-    exp1 = Explorer(env, explorer_file, resc1, v1)
+    # exp1 = Explorer(env, explorer_file, resc1, v1)
     exp2 = Explorer(env, explorer_file, resc2, v2)
-    exp3 = Explorer(env, explorer_file, resc3, v3)
-    exp4 = Explorer(env, explorer_file, resc4, v4)
+    # exp3 = Explorer(env, explorer_file, resc3, v3)
+    # exp4 = Explorer(env, explorer_file, resc4, v4)
 
     # Run the environment simulator
     env.run()
