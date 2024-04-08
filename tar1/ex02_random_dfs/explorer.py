@@ -215,6 +215,7 @@ class Explorer(AbstAgent):
         
         while map[cur_pos] != 0:
             next_pos = None
+            best_move = None
             min_weight = float('inf')
             
             for move in moves:
@@ -224,11 +225,12 @@ class Explorer(AbstAgent):
                 if candidate_pos in map and map[candidate_pos] < min_weight:
                     min_weight = map[candidate_pos]
                     next_pos = candidate_pos
+                    best_move = move
             
             # Atualiza a posição atual para a posição com menor peso encontrada
             new_time += map[cur_pos] 
             curr_pos = next_pos
-            path.append(curr_pos)
+            path.append(best_move)
 
 
         return path, new_time
@@ -244,17 +246,27 @@ class Explorer(AbstAgent):
         #consumed_time == self.clock
 
         #Se tempo esta na metade, calcula mapa e novo tempo
-        #if(self.clock <= self.time_back):
-        #    base_path, candidate_time = greedy_path_to_zero(self.opt.get_all)
+        if(self.clock <= self.time_back):
+            base_path, candidate_time = greedy_path_to_zero(self.opt.get_all)
 
-        #    if(candidate_time > self.time_back):
-        #        self.time_back = candidate_time
+           if(candidate_time > self.time_back):
+               self.time_back = candidate_time
+    
+           else:   
+               i = 0
+               while((self.x, self.y)!=(0, 0)):
+                    (dx, dy) = base_path[0]
+                    result = self.walk(dx, dy)
 
-        #    else:
-        #        #volta tudo
-
-           
-
+                    if result == VS.BUMPED:
+                        print(f"{self.NAME}: when coming back bumped at ({self.x+dx}, {self.y+dy}) , rtime: {self.get_rtime()}")
+                        return
+                    
+                    if result == VS.EXECUTED:
+                        # update the agent's position relative to the origin
+                        self.x += dx
+                        self.y += dy
+                    
 
         #Enquanto ha tempo, continua
         if consumed_time < self.get_rtime():
