@@ -51,6 +51,7 @@ class Explorer(AbstAgent):
         self.plan_visited = set()
         self.map = Map()           # create a map for representing the environment
         self.opt = Opt() 
+        self.time_back = (self.TLIM/2)
         self.vector = vec
         self.victims = {}          # a dictionary of found victims: (seq): ((x,y), [<vs>])
                                    # the key is the seq number of the victim,(x,y) the position, <vs> the list of vital signals
@@ -217,7 +218,7 @@ class Explorer(AbstAgent):
             min_weight = float('inf')
             
             for move in moves:
-                candidate_pos = (current_pos[0] + move[0], current_pos[1] + move[1])
+                candidate_pos = (cur_pos[0] + move[0], cur_pos[1] + move[1])
                 
                 # Se a posição candidata está no mapa e seu peso é menor que o menor peso encontrado até agora
                 if candidate_pos in map and map[candidate_pos] < min_weight:
@@ -227,7 +228,7 @@ class Explorer(AbstAgent):
             # Atualiza a posição atual para a posição com menor peso encontrada
             new_time += map[cur_pos] 
             curr_pos = next_pos
-            path.append(current_pos)
+            path.append(curr_pos)
 
 
         return path, new_time
@@ -237,14 +238,22 @@ class Explorer(AbstAgent):
         """ The agent chooses the next action. The simulator calls this
         method at each cycle. Must be implemented in every agent"""
 
+        #Aumenta com o tempo
         consumed_time = self.TLIM - self.get_rtime()
 
+        #consumed_time == self.clock
 
         #Se tempo esta na metade, calcula mapa e novo tempo
-        if(self.clock <= (self.TLIM/2)):
-            base_path, candidate_time = greedy_path_to_zero(self.opt.get_all)
+        #if(self.clock <= self.time_back):
+        #    base_path, candidate_time = greedy_path_to_zero(self.opt.get_all)
 
-            if(candidate_time)
+        #    if(candidate_time > self.time_back):
+        #        self.time_back = candidate_time
+
+        #    else:
+        #        #volta tudo
+
+           
 
 
         #Enquanto ha tempo, continua
