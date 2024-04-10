@@ -24,4 +24,5 @@ class Opt:
         self.opt_data[coord] = weight
 
 
+
     
