@@ -35,9 +35,9 @@ def main(data_folder_name):
     v4 = [6, 5, 4, 3, 2, 1, 0, 7]
 
     # exp1 = Explorer(env, explorer_file, resc1, v1)
-    exp2 = Explorer(env, explorer_file, resc2, v2)
-    # # exp3 = Explorer(env, explorer_file, resc3, v3)
-    # exp4 = Explorer(env, explorer_file, resc4, v4)
+    # exp2 = Explorer(env, explorer_file, resc2, v2)
+    # exp3 = Explorer(env, explorer_file, resc3, v3)
+    exp4 = Explorer(env, explorer_file, resc4, v4)
 
     # Run the environment simulator
     env.run()

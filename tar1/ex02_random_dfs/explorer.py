@@ -45,6 +45,7 @@ class Explorer(AbstAgent):
         self.x = 0                 # current x position relative to the origin 0
         self.y = 0                 # current y position relative to the origin 0
 
+        self.env = env
         self.plan = []
         self.plan_x = 0
         self.plan_y = 0
@@ -96,7 +97,7 @@ class Explorer(AbstAgent):
         obstacles = self.check_walls_and_lim()
 
         for i in range(8):
-            time.sleep(0.001)
+            # time.sleep(0.09)
 
             #Vetor de prioridade
             # print(f"Direção: {vec[i]}")
@@ -114,6 +115,9 @@ class Explorer(AbstAgent):
             if self.opt.ver_coord(target_xy):
                 # print("Ja visitado 1")
                 # print(1)
+                continue
+
+            if self.time_pos.ver_coord(target_xy):
                 continue
 
             #Check if pos was already visited
@@ -168,9 +172,23 @@ class Explorer(AbstAgent):
             best_move = None
             min_weight = float('inf')
             # print(f"Posicao atual: {mapa[cur_pos]}")
+
+            ## base time to be consumed
+            
+            # self._rtime -= base * self.env.obst[new_x][new_y]
             
             for move in moves:
-                candidate_pos = (cur_pos[0] + move[0], cur_pos[1] + move[1])
+                if move[0] != 0 and move[1] != 0:   # diagonal
+                    base = 1
+                else:                     # walk vertical or horizontal
+                    base = 1.5
+                
+                new_x = cur_pos[0] + move[0]
+                new_y = cur_pos[1] + move[1]
+                candidate_pos = (new_x, new_y)
+                # if(new_x == old_x and new_y == old_y):
+                #     continue
+
                 
                 # Se a posição candidata está no mapa e seu peso é menor que o menor peso encontrado até agora
                 # print("Verifica se esta no mapa")
@@ -179,13 +197,30 @@ class Explorer(AbstAgent):
                     min_weight = mapa[candidate_pos]
                     next_pos = candidate_pos
                     best_move = move
-            
+
+                    if (new_x >= 0 and new_x < self.env.dic["GRID_WIDTH"]and
+                        new_y >= 0 and new_y < self.env.dic["GRID_HEIGHT"] and
+                        self.env.obst[new_x][new_y] != 100):
+                        plus = base * self.env.obst[new_x][new_y]
+                    else:
+                        plus = base
+
+                    if(time_map[new_x, new_y] >= 2):
+                    # seq = self.check_for_victim()
+                    # if(seq != VS.NO_VICTIM):
+                        plus = plus + 2
+
+
             # Atualiza a posição atual para a posição com menor peso encontrada
             # print(time_map[next_pos])
-            new_time = new_time + time_map[next_pos]
-            print(f"new_time: {new_time}")
+            # print(f"self.env.obst: {self.env.obst[new_x][new_y]}")
+            # print(f"plus: {plus}")
+            new_time = new_time + plus
+            # print(f"new_time: {new_time}")
+            # print(f"start back from: {self.x} && {self.y}")
 
             cur_pos = next_pos
+            # print(f"cur_pos: {cur_pos}")
             path.append(best_move)
         
         #Transforma vetor numa pilha
@@ -196,21 +231,29 @@ class Explorer(AbstAgent):
 
     #Explorador 
     def explore(self):
-        print(f"Tempo para voltar: {self.time_back}")
+        # print(f"Tempo para voltar: {self.time_back}")
         dx, dy = self.get_next_position(self.vector)
 
         #Ficou sem movimento
         if((dx, dy) == (-2, -2)):
             self.change = 1
-            print("Ficou sem movimento")
+            # print("Ficou sem movimento")
             self.home_path, self.time_back = self.greedy_path_to_zero(self.opt.get_all())
 
+            if(self.get_rtime()-25 <= self.time_back):   
+                print(f"Tempo de volta: {self.time_back}")
+                print(f"Tempo restante: {self.get_rtime()}")
+                # print(f"Posicao atual: {self.x} && {self.y}")
+                self.mothers_call = 1
+                print("Voltando para base")
+                return
+
             #Verifica tempo
-            print(f"NEW self.time_back: {self.time_back}")
+            # print(f"NEW self.time_back: {self.time_back}")
     
             #Pega melhor movimento para base
             dx, dy = self.home_path.pop() # pylint: disable=unbalanced-tuple-unpacking
-            print("Voltando 1 posicao em direcao a base")
+            # print("Voltando 1 posicao em direcao a base")
 
             rtime_bef = self.get_rtime()
             result = self.walk(dx, dy)
@@ -223,7 +266,7 @@ class Explorer(AbstAgent):
             if(self.change == 1):
                 self.time_back = self.time_back - time_remix
 
-            print(f"Tempo que levou: {rtime_aft - rtime_bef}")
+            # print(f"Tempo que levou: {rtime_aft - rtime_bef}")
 
             if result == VS.BUMPED:
                 self.map.add((self.x + dx, self.y + dy), VS.OBST_WALL, VS.NO_VICTIM, self.check_walls_and_lim())
@@ -241,6 +284,11 @@ class Explorer(AbstAgent):
                 # Check for victims
                 seq = self.check_for_victim()
                 if seq != VS.NO_VICTIM:
+                    self.clock = self.clock + 2
+                    time_remix = time_remix + 2
+                    if(self.change == 1):
+                        self.time_back = self.time_back - time_remix
+
                     vs = self.read_vital_signals()
                     self.victims[vs[0]] = ((self.x, self.y), vs)
                     print(f"{self.NAME} Victim found at ({self.x}, {self.y}), rtime: {self.get_rtime()}")
@@ -296,6 +344,10 @@ class Explorer(AbstAgent):
             # Check for victims
             seq = self.check_for_victim()
             if seq != VS.NO_VICTIM:
+                self.clock = self.clock + 2
+                time_remix = time_remix + 2
+                if(self.change == 1):
+                    self.time_back = self.time_back - time_remix
                 vs = self.read_vital_signals()
                 self.victims[vs[0]] = ((self.x, self.y), vs)
                 print(f"{self.NAME} Victim found at ({self.x}, {self.y}), rtime: {self.get_rtime()}")
@@ -316,7 +368,7 @@ class Explorer(AbstAgent):
             self.map.add((self.x, self.y), difficulty, seq, self.check_walls_and_lim())
 
             #Adicionou a coordenada ao mapa de pesos
-            if not self.opt.ver_coord((self.x, self.y)):
+            if not self.time_pos.ver_coord((self.x, self.y)):
                 self.opt.add_coord((self.x, self.y), self.clock)
                 self.time_pos.add_time((self.x, self.y), -time_remix)
 
@@ -330,22 +382,27 @@ class Explorer(AbstAgent):
 
         #Aumenta com o tempo
         # consumed_time = self.TLIM - self.get_rtime()
-        print(f"Tempo restante: {self.get_rtime()}")
+        # print(f"Tempo restante: {self.get_rtime()}")
+        # print(f"Posicao: {self.x} && {self.y}")
 
         #Caso o tempo do explorador ultrapasse o tempo limite
         # print(f"self.get_rtime: {self.get_rtime()}")
         if(self.mothers_call == 0):
             #Se tempo esgotou
-            if(self.get_rtime()+10 <= self.time_back):
+            if(self.get_rtime()-25 <= self.time_back):
                 self.change = 1
                 print("Tempo excedeu")
                 self.home_path, candidate_time = self.greedy_path_to_zero(self.opt.get_all())
+                print(f"Novo tempo para voltar: {self.time_back}")
 
                 self.time_back = candidate_time
                 print(f"NEW self.time_back: {self.time_back}")
         
                 #Volta base
-                if(self.get_rtime()+10 <= self.time_back):   
+                if(self.get_rtime()-25 <= self.time_back):   
+                    print(f"Tempo de volta: {self.time_back}")
+                    print(f"Tempo restante: {self.get_rtime()}")
+                    # print(f"Posicao atual: {self.x} && {self.y}")
                     self.mothers_call = 1
                     print("Voltando para base")
             else:
