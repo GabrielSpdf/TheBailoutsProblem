@@ -14,7 +14,6 @@ from vs.abstract_agent import AbstAgent
 from vs.constants import VS
 from map import Map
 from opt import Opt 
-from timepos import TimePos
 
 class Stack:
     def __init__(self):
