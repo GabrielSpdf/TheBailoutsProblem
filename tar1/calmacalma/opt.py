@@ -20,8 +20,8 @@ class Opt:
         return self.opt_data
 
     #Adiciona coordenada e o peso da posicao
-    def add_coord(self, coord, weight):
-        self.opt_data[coord] = weight
+    def add_coord(self, coord, visit_n):
+        self.opt_data[coord] = visit_n
 
 
 

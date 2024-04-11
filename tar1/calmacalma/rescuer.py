@@ -7,10 +7,12 @@
 
 import os
 import random
+import numpy as np
 from map import Map
 from vs.abstract_agent import AbstAgent
 from vs.physical_agent import PhysAgent
 from vs.constants import VS
+from cluster import k_means, save_clusters, save_plot
 from abc import ABC, abstractmethod
 
 
@@ -24,8 +26,10 @@ class Rescuer(AbstAgent):
         super().__init__(env, config_file)
 
         # Specific initialization for the rescuer
-        self.map = None             # explorer will pass the map
-        self.victims = None         # list of found victims
+        self.map = Map()             # explorer will pass the map
+        self.env = env
+        self.data_com = [0, 1, 2, 3]
+        self.victims = {}         # list of found victims
         self.plan = []              # a list of planned actions
         self.plan_x = 0             # the x position of the rescuer during the planning phase
         self.plan_y = 0             # the y position of the rescuer during the planning phase
@@ -34,13 +38,77 @@ class Rescuer(AbstAgent):
         self.plan_walk_time = 0.0   # previewed time to walk during rescue
         self.x = 0                  # the current x position of the rescuer when executing the plan
         self.y = 0                  # the current y position of the rescuer when executing the plan
+        self.map_counter = 0        # Verificar quantos mapas o agente ja recebeu
 
                 
         # Starts in IDLE state.
         # It changes to ACTIVE when the map arrives
         self.set_state(VS.IDLE)
 
+    def full_join_maps(self, map):
+        print(f"Resgate com {self.map_counter} mapa(s)")
+        if(self.map_counter == 0):
+            self.map = map
+            self.map_counter = self.map_counter + 1
+
+        elif(self.map_counter == 1 or self.map_counter == 2):
+            self.map.union_maps(map)
+            self.map_counter = self.map_counter + 1
+
+        elif(self.map_counter == 3):
+            self.map.union_maps(map)
+            self.map_counter = self.map_counter + 1
+            print("Resgate com todos os mapas!")
+            self.go_save_victims(self.map, self.victims)
+
+    def add_victims(self, victims):
+        for seq, data in victims.items():
+            self.victims[seq] = data
+
+    #Calcula distancia euclidiana
+    def euclidean_distance(self, point1, point2):
+        return ((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2) ** 0.5
     
+
+    def assign_rescuer_to_nearest_cluster(self, rescuer_position, cluster):
+        centroid_x = cluster[0]
+        centroid_y = cluster[1]
+
+        distance_to_centroid = self.euclidean_distance(rescuer_position, (centroid_x, centroid_y))
+
+        return cluster
+
+    def rescue_victims_within_cluster(self, rescuer_position, cluster):
+        # Lista para guardar a ordem de resgate
+        rescue_order = []
+        
+        # Obter a lista de vítimas do cluster (presumindo que cada vítima é um par (id, (x, y)))
+        victims = cluster[2]
+
+        # Continuar resgatando as vítimas mais próximas até que todas tenham sido resgatadas
+        while victims:
+            # Encontrar a próxima vítima mais próxima do resgatador ou do último resgate
+            next_victim = min(victims, key=lambda v: self.euclidean_distance(rescuer_position, v[1]))
+            rescue_order.append(next_victim)
+            # Atualizar a posição do resgatador para a posição da vítima resgatada
+            rescuer_position = next_victim[1]
+            # Remover a vítima resgatada da lista
+            victims.remove(next_victim)
+
+        return rescue_order
+
+    def plan_rescue_for_all_rescuers(self, rescuer_position, clusters):
+        all_rescue_plans = []
+        # Atribuir o resgatador ao centróide mais próximo
+        nearest_cluster = self.assign_rescuer_to_nearest_cluster(rescuer_position, clusters)
+        # Obter a ordem de resgate dentro desse cluster
+        rescue_order = self.rescue_victims_within_cluster(rescuer_position, nearest_cluster)
+        # Adicionar a ordem de resgate ao plano geral
+        all_rescue_plans.append(rescue_order)
+
+        return all_rescue_plans
+
+
     def go_save_victims(self, map, victims):
         """ The explorer sends the map containing the walls and
         victims' location. The rescuer becomes ACTIVE. From now,
@@ -56,10 +124,23 @@ class Rescuer(AbstAgent):
         self.victims = victims
 
         # print the found victims - you may comment out
-        #for seq, data in self.victims.items():
-        #    coord, vital_signals = data
-        #    x, y = coord
-        #    print(f"{self.NAME} Victim seq number: {seq} at ({x}, {y}) vs: {vital_signals}")
+        # print the found victims - you may comment out
+        for seq, data in self.victims.items():
+            coord, vital_signals = data
+            x, y = coord
+            print(f"{self.NAME} Victim seq number: {seq} at ({x}, {y}) vs: {vital_signals}")
+
+        #max_it = 200 | n_cluster = 4
+        clusters = k_means(self.victims)
+        # print(f"Clusters[0]: {clusters[0]}")
+        # print(f"Clusters[1]: {clusters[1]}")
+        # print(f"Clusters[0][3]: {clusters[1][0]}")
+        save_clusters(clusters)
+        # save_plot(clusters, self.env.dic["GRID_WIDTH"], self.env.dic["GRID_HEIGHT"])
+        
+        cluster_to_rescue = clusters[self.data_com.pop()]
+        rescue_plans = self.plan_rescue_for_all_rescuers((0,0), cluster_to_rescue)
+        print(f"rescue_plans: {rescue_plans}")
 
         #print(f"{self.NAME} time limit to rescue {self.plan_rtime}")
 

@@ -19,9 +19,32 @@
 
 from vs.constants import VS
 
+def full_join_victims(maps):
+    if len(maps) == 0:
+        print("Nenhum mapa encontrado")
+        return
+
+    full_map = maps[0]
+
+    for i in range(1, len(maps)):
+        for key, value in maps[i]:
+            if key not in full_map:
+                full_map[key] = value
+
+    return full_map
+
 class Map:
     def __init__(self):
         self.map_data = {}
+
+    def union_maps(self, map):
+        for coord, (difficulty, victim_seq, actions_res) in map.map_data.items():
+            #Se coordenada ja pertence ao mapa, continua
+            if coord in self.map_data:
+                continue
+            #Se nao pertence, adiciona
+            else:
+                self.add(coord, difficulty, victim_seq, actions_res)
 
     def in_map(self, coord):
         if coord in self.map_data:

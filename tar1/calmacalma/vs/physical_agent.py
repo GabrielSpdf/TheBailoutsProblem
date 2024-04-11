@@ -66,10 +66,11 @@ class PhysAgent:
         new_y = self.y + dy
 
         
-        if (new_x >= 0 and new_x < self.env.dic["GRID_WIDTH"]and
-            new_y >= 0 and new_y < self.env.dic["GRID_HEIGHT"] and
+        if (new_x < self.env.dic["GRID_WIDTH"]and
+            new_y < self.env.dic["GRID_HEIGHT"] and
             self.env.obst[new_x][new_y] != 100):
-            #print(f"{self.mind.NAME}: obstacle difficulty {self.env.obst[new_x][new_y]}")
+            # print(f"base: {base}")
+            # print(f"{self.mind.NAME}: obstacle difficulty {self.env.obst[new_x][new_y]}")
             self._rtime -= base * self.env.obst[new_x][new_y]
             
             ## agent is dead: not enough time
@@ -83,6 +84,7 @@ class PhysAgent:
                 return VS.EXECUTED
         else:
             ## when the agent bumps, we penalize the agent subtracting only the base time from the remaing time 
+            # print("Penalizado")
             self._rtime -= base
             return VS.BUMPED
 

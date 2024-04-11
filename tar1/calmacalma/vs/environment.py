@@ -274,6 +274,13 @@ class Env:
 
         # Draw the environment with items
         self.__draw()
+
+        directory = "clusters_data/"
+        if not os.path.exists(directory):
+            os.makedirs(directory)  # Cria o diretório se ele não existir
+        file_name = os.path.join(directory, f"map.png")
+
+        pygame.image.save(self.screen, file_name)
         
         # Create the main loop
         running = True
