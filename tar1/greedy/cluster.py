@@ -96,7 +96,7 @@ def k_means(victims, clusters = N_CLUSTER, max_iter = MAX_IT):
 def __get_limits(victims):
     x_max, x_min, y_max, y_min = None, None, None, None
 
-    print(f"Vitimas: {victims}")
+    # print(f"Vitimas: {victims}")
 
     #Para cada vitima
     for _id , data in victims.items():

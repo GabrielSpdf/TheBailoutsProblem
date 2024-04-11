@@ -41,9 +41,9 @@ class Explorer(AbstAgent):
         self.walk_stack = Stack()  # a stack to store the movements
         self.set_state(VS.ACTIVE)  #  is active since the begin
         self.resc = resc           # reference to the rescuer agent
-        self.x = 0                 # current x position relative to the origin 0
-        self.y = 0                 # current y position relative to the origin 0
         self.env = env             # obter dados do mapa
+        self.x = self.env.dic["BASE"][0]                  # current x position relative to the origin 0
+        self.y = self.env.dic["BASE"][1]                 # current y position relative to the origin 0
         self.plan_x = 0            # variavel auxiliar para calculo de x
         self.plan_y = 0            # variavel auxiliar para calculo de y
         self.count = 0             # contador para verificar se chegou na base          
@@ -51,8 +51,8 @@ class Explorer(AbstAgent):
         self.mothers_call = 0      # chamada para voltar para base
         self.vv = []               # vetor de vitimas
         self.home_path = []        # caminho para base
-        self.basex = 0             # posicao da base x
-        self.basey = 0             # posicao da base y
+        self.basex = self.env.dic["BASE"][0]              # posicao da base x
+        self.basey = self.env.dic["BASE"][1]              # posicao da base y
         self.map = Map()           # create a map for representing the environment
         self.opt = Opt()           # inicializar mapa de heuristica
         self.time_back = 0         # tempo para voltar para base
@@ -177,7 +177,6 @@ class Explorer(AbstAgent):
             result = self.walk(dx, dy)
             rtime_aft = self.get_rtime()
 
-
             self.time_back = self.time_back - (rtime_bef - rtime_aft)
 
             # print(f"Voltou 1 posicao em direcao a base")
@@ -294,7 +293,7 @@ class Explorer(AbstAgent):
         # print(f"time_back: {self.time_back}")
         #Se nao precisa voltar para base
         if(self.mothers_call == 0):
-            #Se tempo esgotou
+            #Se tempo esgotou (-65)
             if(self.get_rtime()-25 <= self.time_back):
                 print("Tempo excedeu")
 
@@ -302,7 +301,7 @@ class Explorer(AbstAgent):
                 candidate_path, candidate_time = self.greedy_path_to_zero(self.opt.get_all())
                 print(f"Novo tempo candidato para voltar: {candidate_time}")
                 
-                #Se a rota calculada eh melhor, continua
+                #Se a rota calculada eh melhor, continua (-65)
                 if(candidate_time <= self.time_back and candidate_time <= self.get_rtime()-25):
                     print("Caminho novo eh melhor")
                     self.time_back = candidate_time
@@ -341,7 +340,7 @@ class Explorer(AbstAgent):
                 print(f"O tempo de volta restante era: {self.time_back}")
                 print(f"{self.NAME}: rtime {self.get_rtime()}")
                 print("Resgatem!")
-                print(f"VICTIMS: {self.victims}")
+                # print(f"VICTIMS: {self.victims}")
 
                 self.resc.add_victims(self.victims)
                 self.resc.full_join_maps(self.map)

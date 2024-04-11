@@ -29,16 +29,17 @@ class Rescuer(AbstAgent):
         # Specific initialization for the rescuer
         self.map = Map()             # explorer will pass the map
         self.env = env
+        self.count = 0
         self.data_com = [0, 1, 2, 3]
         self.victims = {}         # list of found victims
         self.plan = []              # a list of planned actions
-        self.plan_x = 0             # the x position of the rescuer during the planning phase
-        self.plan_y = 0             # the y position of the rescuer during the planning phase
+        self.plan_x = self.env.dic["BASE"][0]             # the x position of the rescuer during the planning phase
+        self.plan_y = self.env.dic["BASE"][1]             # the y position of the rescuer during the planning phase
         self.plan_visited = set()   # positions already planned to be visited 
         self.plan_rtime = self.TLIM # the remaing time during the planning phase
         self.plan_walk_time = 0.0   # previewed time to walk during rescue
-        self.x = 0                  # the current x position of the rescuer when executing the plan
-        self.y = 0                  # the current y position of the rescuer when executing the plan
+        self.x = self.env.dic["BASE"][0]                  # the current x position of the rescuer when executing the plan
+        self.y = self.env.dic["BASE"][1]                  # the current y position of the rescuer when executing the plan
         self.map_counter = 0        # Verificar quantos mapas o agente ja recebeu
 
                 
@@ -264,8 +265,8 @@ class Rescuer(AbstAgent):
         # Besides, it has a flag indicating that a first-aid kit must be delivered when the move is completed.
         # For instance (0,1,True) means the agent walk to (x+0,y+1) and after walking, it leaves the kit.
 
-        self.plan_visited.add((0,0)) # always start from the base, so it is already visited
-        difficulty, vic_seq, actions_res = self.map.get((0,0))
+        self.plan_visited.add((self.env.dic["BASE"][0],self.env.dic["BASE"][1])) # always start from the base, so it is already visited
+        difficulty, vic_seq, actions_res = self.map.get((self.env.dic["BASE"][0],self.env.dic["BASE"][1]))
         self.__depth_search(actions_res)
 
         # push actions into the plan to come back to the base
