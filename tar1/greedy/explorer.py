@@ -171,7 +171,7 @@ class Explorer(AbstAgent):
             #Volta 1 posicao para base
             dx, dy = self.home_path.pop() # pylint: disable=unbalanced-tuple-unpacking
 
-            # time.sleep(0.001)
+            # time.sleep(0.05)
             #Calcula quanto tempo levou para esse movimento
             rtime_bef = self.get_rtime()
             result = self.walk(dx, dy)
@@ -294,7 +294,7 @@ class Explorer(AbstAgent):
         #Se nao precisa voltar para base
         if(self.mothers_call == 0):
             #Se tempo esgotou (-65)
-            if(self.get_rtime()-25 <= self.time_back):
+            if(self.get_rtime()-10 <= self.time_back):
                 print("Tempo excedeu")
 
                 #Calcula uma possivel rota melhor
@@ -302,7 +302,7 @@ class Explorer(AbstAgent):
                 print(f"Novo tempo candidato para voltar: {candidate_time}")
                 
                 #Se a rota calculada eh melhor, continua (-65)
-                if(candidate_time <= self.time_back and candidate_time <= self.get_rtime()-25):
+                if(candidate_time <= self.time_back and candidate_time <= self.get_rtime()-10):
                     print("Caminho novo eh melhor")
                     self.time_back = candidate_time
                     self.home_path = candidate_path
@@ -363,7 +363,7 @@ class Explorer(AbstAgent):
                 rtime_bef = self.get_rtime()
                 result = self.walk(dx, dy)
                 rtime_aft = self.get_rtime()
-                # time.sleep(0.001)
+                # time.sleep(0.05)
 
                 #Desconta o tempo andado
                 

@@ -64,7 +64,7 @@ class PhysAgent:
         new_x = self.x + dx
         new_y = self.y + dy
 
-        print(f"new_x e new_y: {new_x} & {new_y}")
+        # print(f"new_x e new_y: {new_x} & {new_y}")
 
         if (new_x >= 0 and new_x < self.env.dic["GRID_WIDTH"]and
             new_y >= 0 and new_y < self.env.dic["GRID_HEIGHT"] and
