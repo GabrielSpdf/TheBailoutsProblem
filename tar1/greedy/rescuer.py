@@ -9,11 +9,11 @@ import os
 import random
 import numpy as np
 from map import Map
-from sklearn.metrics import silhouette_score
+#from sklearn.metrics import silhouette_score
 from vs.abstract_agent import AbstAgent
 from vs.physical_agent import PhysAgent
 from vs.constants import VS
-from cluster import k_means, save_clusters, save_plot
+from cluster import k_means_pp, save_clusters, save_plot
 from abc import ABC, abstractmethod
 
 
@@ -47,6 +47,7 @@ class Rescuer(AbstAgent):
         # It changes to ACTIVE when the map arrives
         self.set_state(VS.IDLE)
 
+    # TALVEZ ALTERAR
     def full_join_maps(self, map):
         print(f"Resgate com {self.map_counter} mapa(s)")
         if(self.map_counter == 0):
@@ -67,11 +68,11 @@ class Rescuer(AbstAgent):
         for seq, data in victims.items():
             self.victims[seq] = data
 
-    #Calcula distancia euclidiana
+    # ALTERAR
     def euclidean_distance(self, point1, point2):
         return ((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2) ** 0.5
     
-
+    # ALTERAR
     def assign_rescuer_to_nearest_cluster(self, rescuer_position, cluster):
         centroid_x = cluster[0]
         centroid_y = cluster[1]
@@ -80,14 +81,7 @@ class Rescuer(AbstAgent):
 
         return cluster
 
-    def calculate_SSE(self, clusters):
-        sse = 0
-        for cluster in clusters:
-            centroid = (cluster[0], cluster[1])
-            for _, point in cluster[2]:  # Presume-se que a estrutura seja (id, (x, y))
-                sse += self.euclidean_distance(point, centroid) ** 2
-        return sse
-
+    # ALTERAR
     def rescue_victims_within_cluster(self, rescuer_position, cluster):
         # Lista para guardar a ordem de resgate
         rescue_order = []
@@ -106,7 +100,8 @@ class Rescuer(AbstAgent):
             victims.remove(next_victim)
 
         return rescue_order
-
+    
+    # ALTERAR
     def plan_rescue_for_all_rescuers(self, rescuer_position, clusters):
         all_rescue_plans = []
         # Atribuir o resgatador ao centróide mais próximo
@@ -140,23 +135,15 @@ class Rescuer(AbstAgent):
             x, y = coord
             print(f"{self.NAME} Victim seq number: {seq} at ({x}, {y}) vs: {vital_signals}")
 
+        # TUDO COMECA AQUI
+
         #max_it = 200 | n_cluster = 4
-        clusters = k_means(self.victims)
+        clusters = k_means_pp(self.victims)
         save_clusters(clusters)
 
-        #Fail plot
-        # save_plot(clusters, self.env.dic["GRID_WIDTH"], self.env.dic["GRID_HEIGHT"])
+        save_plot(clusters)
 
-        points = [point for cluster in clusters for _, point in cluster[2]]
-        labels = [i for i, cluster in enumerate(clusters) for _ in cluster[2]]
-
-        score = silhouette_score(points, labels)
-        print(f"Silhouette Score: {score}")
-
-        sse = self.calculate_SSE(clusters)
-        print(f"SSE: {sse}")
-        
-        #Pega apenas 1 posicao para o resgatdor em questao
+        #Pega apenas 1 posicao para o resgatador em questao
         cluster_to_rescue = clusters[self.data_com.pop()]
 
         #Vetor com a prioridade do resgatador atual
@@ -180,7 +167,8 @@ class Rescuer(AbstAgent):
         print(f"{self.NAME} END OF PLAN")
                   
         self.set_state(VS.ACTIVE)
-        
+       
+    # ALTERAR
     def __depth_search(self, actions_res):
         enough_time = True
         ##print(f"\n{self.NAME} actions results: {actions_res}")

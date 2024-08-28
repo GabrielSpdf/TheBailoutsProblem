@@ -2,103 +2,112 @@ import os
 import random as rd
 import matplotlib.pyplot as plt
 import matplotlib
+import numpy as np
 matplotlib.use('Agg')
 
 N_CLUSTER = 4
 MAX_IT = 200
 DPI = 100
 
-
-def k_means(victims, clusters = N_CLUSTER, max_iter = MAX_IT):
+def k_means_pp(victims, clusters = N_CLUSTER, max_iter = MAX_IT, tolerance=0.0001):
     x_min, x_max, y_min, y_max = __get_limits(victims) 
 
-    print(f"x_min: {x_min}, x_max: {x_max}")
-    print(f"y_min: {y_min}, y_max: {y_max}")
+    # print(f"x_min: {x_min}, x_max: {x_max}")
+    # print(f"y_min: {y_min}, y_max: {y_max}")
 
-    #Vetor dos centroides
+    # Inicializacao dos centroides
     centroids = []
+    victim_coords = [data[0] for data in victims.values()] 
 
-    #Para cada centroide um valor eh sorteado
-    for _ in range(clusters):
-        if x_max - 1 > x_min:
-            cx = rd.randint(x_min, x_max - 1)
-        else:
-            cx = x_min  # ou trate o erro conforme necessário
+    # Escolhe o primeiro centroide aleatoriamente
+    first_centroid = victim_coords[rd.randint(0, len(victim_coords) - 1)]
+    centroids.append([first_centroid[0], first_centroid[1], []])
 
-        if y_max - 1 > y_min:
-            cy = rd.randint(y_min, y_max - 1)
-        else:
-            cy = y_min  # ou trate o erro conforme necessário
+    # Escolhe os proximos centroides com base em K-means++
+    for _ in range(1, clusters):
+        distances = []
+        
+        # Para cada ponto, calcula a distancia ao centroide mais proximo
+        for coord in victim_coords:
+            min_dist = min((coord[0] - c[0])**2 + (coord[1] - c[1])**2 for c in centroids)
+            distances.append(min_dist)
 
-        centroids.append([cx, cy, []])
+        # Seleciona o proximo centroide com probabilidade proporcional a distancia
+        distances = np.array(distances)
+        probabilities = distances / distances.sum()
+        next_centroid_idx = np.random.choice(range(len(victim_coords)), p=probabilities)
+        next_centroid = victim_coords[next_centroid_idx]
+
+        centroids.append([next_centroid[0], next_centroid[1], []])
     
+    # Continuacao K-means...
     c_changed = True
     it = 0
 
     while it < max_iter and c_changed:
         c_changed = False
 
-        #Limpa os vetores de cada centroide
+        # Limpa os vetores de cada centroide
         for c in centroids:
             c[2].clear()
 
-        #Para cada individuo do dataset
+        # Para cada vitima
         for id, data in victims.items():
-            min_dist = -1
+            min_dist = float("inf")
             closest = -1
             coord, _ = data
 
-            #Calcula a distancia quadratica do individuo i para cada centroide
+            # Calcula a distancia quadratica para cada centroide
             for i, c in enumerate(centroids):
                 c_dist = (c[0] - coord[0])**2 +  (c[1] - coord[1])**2
 
-                #Se o centroid atual esta mais proximo, atribui
-                if c_dist < min_dist or min_dist == -1:
+                # Atribui o centroide mais proximo
+                if c_dist < min_dist:
                     min_dist = c_dist
                     closest = i
             
-            #Adiciona individuo mais proximo ao vetor de centroides
+            # Adiciona a vitima ao vetor do centroide mais proximo
             centroids[closest][2].append((id, coord))
 
         
-        #Para cada centroide no vetor de centroides 
+        # Recalcula os centroides
         for c in centroids:
             n = len(c[2])
-            x, y = 0, 0
 
-            #Coordenadas do centroide
-            old_x, old_y = c[0], c[1]
-
-            #Para cada individuo, somar as coordenadas
-            for v in c[2]:
-                x += v[1][0]
-                y += v[1][1]
-            
-            #Se ainda ha individuos a serem analisados
-            if n != 0:
-                #Realiza a media da coordenadas
-                c[0] = x/n
-                c[1] = y/n
-
-                #Se a coordenada do centroide mudou
-                if c[0] != old_x or c[1] != old_y:
-                    c_changed = True
-            #Se nao ha mais individuo
+            if n == 0:
+                c[0] = rd.randint(x_min, x_max)
+                c[1] = rd.randint(y_min, y_max)
             else:
-                c[0] = rd.randint((-1)*int(x_min/2), int(x_max/2))
-                c[1] = rd.randint((-1)*int(y_min/2), int(y_max/2))
-            
+                x, y = 0, 0
+                for v in c[2]:
+                    x += v[1][0]
+                    y += v[1][1]
+                new_x = x / n
+                new_y = y / n
 
-        it = it + 1
+                if abs(new_x - c[0]) > tolerance or abs(new_y - c[1]) > tolerance:
+                    c_changed = True
+
+                c[0], c[1] = new_x, new_y
+
+        it += 1
 
     return centroids
 
+
+#######################################################
+
 def __get_limits(victims):
-    x_max, x_min, y_max, y_min = None, None, None, None
+    if not victims:
+        raise ValueError("A lista de vitimas esta vazia!")
+
+    first_victim = next(iter(victims.values()))
+    x_min = x_max = first_victim[0][0]
+    y_min = y_max = first_victim[0][1]
 
     # print(f"Vitimas: {victims}")
 
-    #Para cada vitima
+    # Para cada vitima
     for _id , data in victims.items():
         coord, _ = data
 
@@ -116,15 +125,17 @@ def __get_limits(victims):
         #Encontrar maior x & y
         if x > x_max:
             x_max = x
-        else:
+        if x < x_min:
             x_min = x
 
         if y > y_max:
             y_max = y
-        else:
+        if y < y_min:
             y_min = y
 
     return x_min, x_max, y_min, y_max
+
+###############################################
 
 
 def save_clusters(clusters):
@@ -150,53 +161,44 @@ def save_clusters(clusters):
         with open(file_name, 'w') as file:
             file.write(contents)
 
+##########################################################
 
-def save_plot(clusters, grid_w, grid_h):
-    # Define diferentes cores para os clusters
-    colors = ['r', 'g', 'b', 'y', 'c', 'm', 'k']
+def save_plot(centroids, filename='cluster_plot.png', dpi=100):
+    # Diretório onde o plot será salvo
+    save_dir = 'clusters_data/'
+    
+    # Cria o diretório se ele não existir
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
 
-    # Ajuste do tamanho da figura para corresponder à proporção da janela do Pygame
-    fig_size_x = grid_w  
-    fig_size_y = grid_h
+    # Cores para os clusters
+    colors = ['blue', 'green', 'purple', 'orange']  # Adicione mais cores se necessário
 
-    # Cria uma nova figura para o plot
-    plt.figure(figsize=(fig_size_x, fig_size_y))
+    # Inicia o plot
+    plt.figure(dpi=dpi)
 
-    plt.xlim(0, grid_w)
-    plt.ylim(0, grid_h)
+    # Plotar os clusters
+    for idx, centroid in enumerate(centroids):
+        cluster_victims = centroid[2]  # As vítimas pertencentes ao cluster
+        cluster_coords = np.array([v[1] for v in cluster_victims])
 
-    plt.gca().invert_yaxis()
+        if cluster_coords.size > 0:  # Verifica se o cluster não está vazio
+            plt.scatter(cluster_coords[:, 0], cluster_coords[:, 1], color=colors[idx % len(colors)], label=f'Cluster {idx + 1}')
 
-    plt.gca().set_aspect('equal', adjustable='box')
+        # Plotar os centroides
+        plt.scatter(centroid[0], centroid[1], color='red', marker='X', s=200, edgecolor='black')
 
-    # Itera sobre os clusters
-    for i, cluster in enumerate(clusters):
-        # Coleta todas as coordenadas x e y deste cluster
-        x_coords = [victim[1][0] for victim in cluster[2]]
-        y_coords = [victim[1][1] for victim in cluster[2]]
-
-        # Plot os pontos do cluster com a cor correspondente
-        plt.scatter(x_coords, y_coords, c=colors[i % len(colors)], label=f'Cluster {i}')
-
-        # Plot o centróide do cluster
-        plt.scatter(cluster[0], cluster[1], c=colors[i % len(colors)], marker='x', s=100, label=f'Centroide {i}')
-
-    # Adiciona uma legenda para identificar cada cluster
-    plt.legend()
-
-    # Adiciona títulos para os eixos e para o plot
+    # Configurações do plot
     plt.xlabel('Coordenada X')
     plt.ylabel('Coordenada Y')
     plt.title('Visualização dos Clusters')
+    plt.legend()
 
-    directory = "clusters_data/"
-    if not os.path.exists(directory):
-        os.makedirs(directory)  # Cria o diretório se ele não existir
-    file_name = os.path.join(directory, f"plot.png")
-
-    # Salva a figura no caminho especificado
-    plt.savefig(file_name, dpi=DPI)
-
-    # Fecha a figura para liberar memória
+    # Caminho completo para salvar a imagem
+    save_path = os.path.join(save_dir, filename)
+    
+    # Salvar o plot
+    plt.savefig(save_path)
     plt.close()
 
+    print(f"Plot salvo em: {save_path}")
