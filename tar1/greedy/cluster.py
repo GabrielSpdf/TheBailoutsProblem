@@ -10,11 +10,6 @@ MAX_IT = 200
 DPI = 100
 
 def k_means_pp(victims, clusters = N_CLUSTER, max_iter = MAX_IT, tolerance=0.0001):
-    x_min, x_max, y_min, y_max = __get_limits(victims) 
-
-    # print(f"x_min: {x_min}, x_max: {x_max}")
-    # print(f"y_min: {y_min}, y_max: {y_max}")
-
     # Inicializacao dos centroides
     centroids = []
     victim_coords = [data[0] for data in victims.values()] 
@@ -55,7 +50,7 @@ def k_means_pp(victims, clusters = N_CLUSTER, max_iter = MAX_IT, tolerance=0.000
         for id, data in victims.items():
             min_dist = float("inf")
             closest = -1
-            coord, _ = data
+            coord, severity = data
 
             # Calcula a distancia quadratica para cada centroide
             for i, c in enumerate(centroids):
@@ -67,76 +62,47 @@ def k_means_pp(victims, clusters = N_CLUSTER, max_iter = MAX_IT, tolerance=0.000
                     closest = i
             
             # Adiciona a vitima ao vetor do centroide mais proximo
-            centroids[closest][2].append((id, coord))
+            centroids[closest][2].append((id, coord, severity))
 
         
         # Recalcula os centroides
         for c in centroids:
-            n = len(c[2])
+            weighted_x, weighted_y = 0, 0
+            total_weight = 0
 
-            if n == 0:
-                c[0] = rd.randint(x_min, x_max)
-                c[1] = rd.randint(y_min, y_max)
+            for _, (x, y), severity in c[2]:
+                weight = 0
+                if severity == 1:
+                    weight = 6
+                elif severity == 2:
+                    weight = 3
+                elif severity == 3:
+                    weight = 2
+                elif severity == 4:
+                    weight = 1
+
+                weighted_x += x * weight
+                weighted_y += y * weight
+                total_weight += weight
+
+            if total_weight != 0:
+                new_x = weighted_x / total_weight
+                new_y = weighted_y / total_weight
             else:
-                x, y = 0, 0
-                for v in c[2]:
-                    x += v[1][0]
-                    y += v[1][1]
-                new_x = x / n
-                new_y = y / n
+                new_x, new_y = c[0], c[1]
 
-                if abs(new_x - c[0]) > tolerance or abs(new_y - c[1]) > tolerance:
-                    c_changed = True
+            if abs(new_x - c[0]) > tolerance or abs(new_y - c[1]) > tolerance:
+                c_changed = True
 
-                c[0], c[1] = new_x, new_y
+            c[0], c[1] = new_x, new_y
 
         it += 1
 
     return centroids
 
+######################################################
 
 #######################################################
-
-def __get_limits(victims):
-    if not victims:
-        raise ValueError("A lista de vitimas esta vazia!")
-
-    first_victim = next(iter(victims.values()))
-    x_min = x_max = first_victim[0][0]
-    y_min = y_max = first_victim[0][1]
-
-    # print(f"Vitimas: {victims}")
-
-    # Para cada vitima
-    for _id , data in victims.items():
-        coord, _ = data
-
-        x, y = coord
-
-        #Se valores nao foram alterados
-        if x_max == None or x_min == None:
-            x_max = x;
-            x_min = x;
-
-        if y_max == None or y_min == None:
-            y_max = y
-            y_min = y
-        
-        #Encontrar maior x & y
-        if x > x_max:
-            x_max = x
-        if x < x_min:
-            x_min = x
-
-        if y > y_max:
-            y_max = y
-        if y < y_min:
-            y_min = y
-
-    return x_min, x_max, y_min, y_max
-
-###############################################
-
 
 def save_clusters(clusters):
     #Para cluster

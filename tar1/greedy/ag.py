@@ -1,19 +1,44 @@
 import random
+import numpy as np
 
-# Exemplo de dados de vítimas (id, (x, y), severidade)
-victims = {
-    1: ([10, 10], 1),
-    2: ([20, 30], 2),
-    3: ([30, 40], 1),
-    4: ([40, 20], 3),
-    5: ([50, 50], 1)
-}
-
-centroid = [30, 30]  # Exemplo de coordenada do centróide do cluster
 
 POP_SIZE = 20  # Tamanho da população
 MUTATION_RATE = 0.1  # Taxa de mutação
 GENERATIONS = 100  # Número de gerações
+
+# setar vitimas
+# setar centroide
+
+def calculate_distance(coord1, coord2):
+    """Calcula a distância euclidiana entre duas coordenadas."""
+    return np.linalg.norm(np.array(coord1) - np.array(coord2))
+
+def fitness(sequence, victims, centroid):
+    """Calcula o fitness de uma sequência, priorizando vítimas mais graves."""
+    total_distance = 0
+    weighted_rescue = 0
+    
+    for i in range(len(sequence) - 1):
+        victim_id = sequence[i]
+        next_victim_id = sequence[i + 1]
+        victim = victims[victim_id]
+        next_victim = victims[next_victim_id]
+        
+        severity_weight = 6 if victim[1] == 1 else 3 if victim[1] == 2 else 2 if victim[1] == 3 else 1
+        weighted_rescue += severity_weight
+        
+        total_distance += calculate_distance(victim[0], next_victim[0])
+    
+    # Adiciona a última vítima na contagem
+    last_victim_id = sequence[-1]
+    last_victim = victims[last_victim_id]
+    severity_weight = 6 if last_victim[1] == 1 else 3 if last_victim[1] == 2 else 2 if last_victim[1] == 3 else 1
+    weighted_rescue += severity_weight
+    
+    # Penaliza o fitness por grandes distâncias percorridas
+    fitness_value = weighted_rescue / (1 + total_distance)
+    
+    return fitness_value
 
 def create_individual(victim_ids):
     """Cria um novo indivíduo (sequência aleatória de resgate)."""
@@ -66,4 +91,3 @@ for generation in range(GENERATIONS):
 final_fitnesses = [fitness(individual, victims, centroid) for individual in population]
 best_individual = population[np.argmax(final_fitnesses)]
 print(f"Melhor sequência encontrada: {best_individual} com fitness {max(final_fitnesses):.4f}")
-

@@ -30,7 +30,7 @@ class Stack:
         return len(self.items) == 0
 
 class Explorer(AbstAgent):
-    def __init__(self, env, config_file, resc, vec):
+    def __init__(self, env, config_file, man, vec):
         """ Construtor do agente random on-line
         @param env: a reference to the environment 
         @param config_file: the absolute path to the 's config file
@@ -40,7 +40,7 @@ class Explorer(AbstAgent):
         super().__init__(env, config_file)
         self.walk_stack = Stack()  # a stack to store the movements
         self.set_state(VS.ACTIVE)  #  is active since the begin
-        self.resc = resc           # reference to the rescuer agent
+        self.man = man           # reference to the rescuer agent
         self.env = env             # obter dados do mapa
         self.x = self.env.dic["BASE"][0]                  # current x position relative to the origin 0
         self.y = self.env.dic["BASE"][1]                 # current y position relative to the origin 0
@@ -342,8 +342,8 @@ class Explorer(AbstAgent):
                 print("Resgatem!")
                 # print(f"VICTIMS: {self.victims}")
 
-                self.resc.add_victims(self.victims)
-                self.resc.full_join_maps(self.map)
+                self.man.add_man_victims(self.victims)
+                self.man.full_join_maps(self.map)
 
                 return False
 
@@ -389,9 +389,9 @@ class Explorer(AbstAgent):
             print("Resgatem!")
             print(f"VICTIMS: {self.victims}")
 
-            self.resc.add_victims(self.victims)
-            self.resc.full_join_maps(self.map)
-            # self.resc.go_save_victims(self.map, self.victims)
+            self.man.add_man_victims(self.victims)
+            self.man.full_join_maps(self.map)
+
             return False
 
         return True

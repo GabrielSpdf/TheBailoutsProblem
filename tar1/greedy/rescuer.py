@@ -4,7 +4,6 @@
 ### Not a complete version of DFS; it comes back prematuraly
 ### to the base when it enters into a dead end position
 
-
 import os
 import random
 import numpy as np
@@ -13,9 +12,7 @@ from map import Map
 from vs.abstract_agent import AbstAgent
 from vs.physical_agent import PhysAgent
 from vs.constants import VS
-from cluster import k_means_pp, save_clusters, save_plot
 from abc import ABC, abstractmethod
-
 
 ## Classe que define o Agente Rescuer com um plano fixo
 class Rescuer(AbstAgent):
@@ -47,26 +44,14 @@ class Rescuer(AbstAgent):
         # It changes to ACTIVE when the map arrives
         self.set_state(VS.IDLE)
 
-    # TALVEZ ALTERAR
-    def full_join_maps(self, map):
-        print(f"Resgate com {self.map_counter} mapa(s)")
-        if(self.map_counter == 0):
-            self.map = map
-            self.map_counter = self.map_counter + 1
-
-        elif(self.map_counter == 1 or self.map_counter == 2):
-            self.map.union_maps(map)
-            self.map_counter = self.map_counter + 1
-
-        elif(self.map_counter == 3):
-            self.map.union_maps(map)
-            self.map_counter = self.map_counter + 1
-            print("Resgate com todos os mapas!")
-            self.go_save_victims(self.map, self.victims)
+    def load_map(self, map):
+        print("Resgatador recebeu o mapa!")
+        self.map = map
 
     def add_victims(self, victims):
-        for seq, data in victims.items():
-            self.victims[seq] = data
+        for victim in victims:
+            seq, data = victim[0], victim[1:]
+            print(f"Vítima {seq}: Coordenadas {data[0]}, Severidade {data[1]}")
 
     # ALTERAR
     def euclidean_distance(self, point1, point2):
@@ -128,21 +113,15 @@ class Rescuer(AbstAgent):
         #print(f"{self.NAME} List of found victims received from the explorer")
         self.victims = victims
 
-        # print the found victims - you may comment out
-        # print the found victims - you may comment out
         for seq, data in self.victims.items():
             coord, vital_signals = data
             x, y = coord
             print(f"{self.NAME} Victim seq number: {seq} at ({x}, {y}) vs: {vital_signals}")
 
         # TUDO COMECA AQUI
+        exit()
 
-        #max_it = 200 | n_cluster = 4
-        clusters = k_means_pp(self.victims)
-        save_clusters(clusters)
-
-        save_plot(clusters)
-
+        #############################################################################
         #Pega apenas 1 posicao para o resgatador em questao
         cluster_to_rescue = clusters[self.data_com.pop()]
 
