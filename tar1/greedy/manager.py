@@ -1,9 +1,12 @@
 import numpy as np
+import xgboost as xgb
 from map import Map
 from cluster import *
 
 class Manager():
     def __init__(self, resc1, resc2, resc3, resc4):
+        self.model = xgb.XGBClassifier()  
+        self.model.load_model('/home/gaspad/prog/SistemasInteligentes/tar1/greedy/estimate/modelo_xgboost.json')
         self.resc1 = resc1
         self.resc2 = resc2
         self.resc3 = resc3
@@ -50,6 +53,15 @@ class Manager():
             self.victims[seq] = data
 
     def plan_to_rescuer(self):
+        # print(f"self.victims: {self.victims}")
+        for key, value in self.victims.items():
+            X_test = np.array([value[1][3], value[1][4], value[1][5]]).reshape(1, -1)
+            predicted_class = int(self.model.predict(X_test)[0])
+
+            value[1].append(predicted_class)
+
+            self.victims[key] = (value[0], value[1])
+
         clusters = k_means_pp(self.victims)
         save_clusters(clusters)
 

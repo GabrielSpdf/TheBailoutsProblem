@@ -7,6 +7,7 @@
 import os
 import random
 import numpy as np
+import xgboost as xgb
 from map import Map
 #from sklearn.metrics import silhouette_score
 from vs.abstract_agent import AbstAgent
@@ -25,6 +26,8 @@ class Rescuer(AbstAgent):
 
         # Specific initialization for the rescuer
         self.map = Map()             # explorer will pass the map
+        #self.model = xgb.XGBClassifier()  
+        #self.model.load_model('/home/gaspad/prog/SistemasInteligentes/tar1/greedy/estimate/modelo_xgboost.json')
         self.env = env
         self.count = 0
         self.data_com = [0, 1, 2, 3]
@@ -51,6 +54,13 @@ class Rescuer(AbstAgent):
     def add_victims(self, victims):
         for victim in victims:
             seq, data = victim[0], victim[1:]
+            #X_test = np.array([data[1][3], data[1][4], data[1][5]]).reshape(1, -1)
+            #predicted_class = int(self.model.predict(X_test)[0])
+
+            #data[1].append(predicted_class)
+
+            # print(f"Data: {data}")
+
             print(f"Vítima {seq}: Coordenadas {data[0]}, Severidade {data[1]}")
 
     # ALTERAR

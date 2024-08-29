@@ -9,8 +9,9 @@ N_CLUSTER = 4
 MAX_IT = 200
 DPI = 100
 
-def k_means_pp(victims, clusters = N_CLUSTER, max_iter = MAX_IT, tolerance=0.0001):
-    # Inicializacao dos centroides
+def k_means_pp(victims, clusters=N_CLUSTER, max_iter=MAX_IT, tolerance=0.0001):
+    # print(f"victims k_means: {victims}")
+    # Inicialização dos centroides
     centroids = []
     victim_coords = [data[0] for data in victims.values()] 
 
@@ -18,16 +19,16 @@ def k_means_pp(victims, clusters = N_CLUSTER, max_iter = MAX_IT, tolerance=0.000
     first_centroid = victim_coords[rd.randint(0, len(victim_coords) - 1)]
     centroids.append([first_centroid[0], first_centroid[1], []])
 
-    # Escolhe os proximos centroides com base em K-means++
+    # Escolhe os próximos centroides com base em K-means++
     for _ in range(1, clusters):
         distances = []
         
-        # Para cada ponto, calcula a distancia ao centroide mais proximo
+        # Para cada ponto, calcula a distância ao centroide mais próximo
         for coord in victim_coords:
             min_dist = min((coord[0] - c[0])**2 + (coord[1] - c[1])**2 for c in centroids)
             distances.append(min_dist)
 
-        # Seleciona o proximo centroide com probabilidade proporcional a distancia
+        # Seleciona o próximo centroide com probabilidade proporcional à distância
         distances = np.array(distances)
         probabilities = distances / distances.sum()
         next_centroid_idx = np.random.choice(range(len(victim_coords)), p=probabilities)
@@ -35,7 +36,7 @@ def k_means_pp(victims, clusters = N_CLUSTER, max_iter = MAX_IT, tolerance=0.000
 
         centroids.append([next_centroid[0], next_centroid[1], []])
     
-    # Continuacao K-means...
+    # Continuação do K-means...
     c_changed = True
     it = 0
 
@@ -46,23 +47,23 @@ def k_means_pp(victims, clusters = N_CLUSTER, max_iter = MAX_IT, tolerance=0.000
         for c in centroids:
             c[2].clear()
 
-        # Para cada vitima
+        # Para cada vítima
         for id, data in victims.items():
             min_dist = float("inf")
             closest = -1
             coord, severity = data
 
-            # Calcula a distancia quadratica para cada centroide
+            # Calcula a distância quadrática para cada centroide
             for i, c in enumerate(centroids):
                 c_dist = (c[0] - coord[0])**2 +  (c[1] - coord[1])**2
 
-                # Atribui o centroide mais proximo
+                # Atribui o centroide mais próximo
                 if c_dist < min_dist:
                     min_dist = c_dist
                     closest = i
             
-            # Adiciona a vitima ao vetor do centroide mais proximo
-            centroids[closest][2].append((id, coord, severity))
+            # Adiciona a vítima ao vetor do centroide mais próximo
+            centroids[closest][2].append((id, coord, severity[-1]))  # severity[-1] é a classe
 
         
         # Recalcula os centroides
@@ -70,15 +71,15 @@ def k_means_pp(victims, clusters = N_CLUSTER, max_iter = MAX_IT, tolerance=0.000
             weighted_x, weighted_y = 0, 0
             total_weight = 0
 
-            for _, (x, y), severity in c[2]:
+            for _, (x, y), class_severity in c[2]:
                 weight = 0
-                if severity == 1:
+                if class_severity == 0:
                     weight = 6
-                elif severity == 2:
+                elif class_severity == 1:
                     weight = 3
-                elif severity == 3:
+                elif class_severity == 2:
                     weight = 2
-                elif severity == 4:
+                elif class_severity == 3:
                     weight = 1
 
                 weighted_x += x * weight
