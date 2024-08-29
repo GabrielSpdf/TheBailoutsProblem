@@ -113,10 +113,12 @@ def save_clusters(clusters):
         directory = "clusters_data/cluster"
         if not os.path.exists(directory):
             os.makedirs(directory)  # Cria o diretório se ele não existir
-        file_name = os.path.join(directory, f"cluster{i}.txt")
+        file_name = os.path.join(directory, f"cluster{i+1}.txt")
         
         # Inicializa o conteúdo do arquivo
-        contents = f"{cluster[0]},{cluster[1]}\n"
+        # contents = f"{cluster[0]},{cluster[1]}\n"
+
+        contents = ""
         
         # Adiciona informações de cada 'vítima' ao conteúdo do arquivo
         for victim in cluster[2]:

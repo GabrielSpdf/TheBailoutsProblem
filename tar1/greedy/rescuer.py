@@ -17,7 +17,7 @@ from genetic import evaluate_sequence, initialize_random, reproduce_pop, select_
 
 ## Classe que define o Agente Rescuer com um plano fixo
 class Rescuer(AbstAgent):
-    def __init__(self, env, config_file):
+    def __init__(self, env, config_file, rescuer_id):
         """ 
         @param env: a reference to an instance of the environment class
         @param config_file: the absolute path to the agent's config file"""
@@ -29,6 +29,7 @@ class Rescuer(AbstAgent):
         #self.model = xgb.XGBClassifier()  
         #self.model.load_model('/home/gaspad/prog/SistemasInteligentes/tar1/greedy/estimate/modelo_xgboost.json')
         self.env = env
+        self.rescuer_id = rescuer_id
         self.start_x = self.env.dic["BASE"][0]
         self.start_y = self.env.dic["BASE"][1]
         self.count = 0
@@ -68,9 +69,10 @@ class Rescuer(AbstAgent):
         print(f"\n\n*** R E S C U E R ***")
         # self.map = map
         # self.victims = victims
-        import json
 
-        print(json.dumps(self.victims, indent=4))
+        # import json
+        # print(json.dumps(self.victims, indent=4))
+
         self.__planner()
         i = 1
         self.plan_x = self.env.dic["BASE"][0]
@@ -128,8 +130,29 @@ class Rescuer(AbstAgent):
             self.TLIM,
             self.COST_FIRST_AID,
         )
+
         best = best[1]
-        print("best sequence: ", best)
+
+        directory = "clusters_data/cluster"
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        
+        file_name = os.path.join(directory, f"seq{self.rescuer_id}.txt")
+
+        # Salvar a melhor sequência em um arquivo .txt
+        with open(file_name, "w") as f:
+            for victim_id in best:
+                # Procurar a vítima na lista de self.victims
+                victim_info = next((v for v in self.victims if v[0] == victim_id), None)
+                
+                if victim_info is not None:
+                    x, y = victim_info[1]  # Coordenadas X e Y
+                    severity_class = victim_info[2][-1]  # Classe de gravidade
+                    # Escrever no arquivo no formato ID, X, Y, Classe de gravidade
+                    f.write(f"{victim_id}, {x}, {y}, {severity_class}\n")
+                else:
+                    print(f"Erro: victim_id {victim_id} não encontrado em self.victims.")
+
         best = seq_list2dict(best, self.victims)
         current_pos = (self.env.dic["BASE"][0],self.env.dic["BASE"][1])
         for victim in best:

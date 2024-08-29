@@ -23,10 +23,10 @@ def main(data_folder_name):
     explorer_file = os.path.join(data_folder, "explorer_config.txt")
     
     # Instantiate agents rescuer and explorer
-    resc1 = Rescuer(env, rescuer_file)
-    resc2 = Rescuer(env, rescuer_file)
-    resc3 = Rescuer(env, rescuer_file)
-    resc4 = Rescuer(env, rescuer_file)
+    resc1 = Rescuer(env, rescuer_file, 1)
+    resc2 = Rescuer(env, rescuer_file, 2)
+    resc3 = Rescuer(env, rescuer_file, 3)
+    resc4 = Rescuer(env, rescuer_file, 4)
 
     man = Manager(resc1, resc2, resc3, resc4)
 
@@ -52,6 +52,6 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         data_folder_name = sys.argv[1]
     else:
-                    data_folder_name = os.path.join("datasets", "data_225v_100x80")
+                    data_folder_name = os.path.join("datasets", "data_42v_20x20")
         
     main(data_folder_name)

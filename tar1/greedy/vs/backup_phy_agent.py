@@ -26,7 +26,6 @@ class PhysAgent:
         self.y = y_base               # current y coordinate
         self._rtime = mind.TLIM       # current remaining time
         self._state = state           # -1=dead  0=successfully ended 1=alive
-       
 
     def _end_of_time(self):
         """ This protected method allows the enviroment to check if time limit was reached and if the agent is at the base.
@@ -65,11 +64,13 @@ class PhysAgent:
         new_x = self.x + dx
         new_y = self.y + dy
 
-        
+        # print(f"new_x e new_y: {new_x} & {new_y}")
+
         if (new_x >= 0 and new_x < self.env.dic["GRID_WIDTH"]and
             new_y >= 0 and new_y < self.env.dic["GRID_HEIGHT"] and
             self.env.obst[new_x][new_y] != 100):
-            #print(f"{self.mind.NAME}: obstacle difficulty {self.env.obst[new_x][new_y]}")
+            # print(f"base: {base}")
+            # print(f"{self.mind.NAME}: obstacle difficulty {self.env.obst[new_x][new_y]}")
             self._rtime -= base * self.env.obst[new_x][new_y]
             
             ## agent is dead: not enough time
@@ -83,6 +84,7 @@ class PhysAgent:
                 return VS.EXECUTED
         else:
             ## when the agent bumps, we penalize the agent subtracting only the base time from the remaing time 
+            print("Penalizado")
             self._rtime -= base
             return VS.BUMPED
 
