@@ -6,13 +6,13 @@ from search import search
 
 
 def evaluate_sequence(
-    sequence, victims, map, cost_line, cost_diag, tlim, cost_first_aid
+    start_x, start_y, sequence, victims, map, cost_line, cost_diag, tlim, cost_first_aid
 ):
 
     plan = []
     plan_walk_time = 0.0
     plan_rtime = tlim
-    current_pos = (0, 0)
+    current_pos = (start_x, start_y)
     score = 0.0
     for seq in sequence:
         victim_index = next(
@@ -24,7 +24,7 @@ def evaluate_sequence(
             cost_line, cost_diag, map, current_pos, victim[1]
         )
         _, time_to_go_back = search(
-            cost_line, cost_diag, map, victim[1], (0, 0)
+            cost_line, cost_diag, map, victim[1], (start_x, start_y)
         )
         time_required += cost_first_aid
         if plan_walk_time + time_required + time_to_go_back > plan_rtime - 40:
@@ -76,11 +76,13 @@ def initialize_random(victims, n_sequences):
 
 
 def select_the_best(
-    population, victims, map, cost_line, cost_diag, tlim, cost_first_aid
+    start_x, start_y, population, victims, map, cost_line, cost_diag, tlim, cost_first_aid
 ):
     scores = []
     for sequence in population:
         score = evaluate_sequence(
+            start_x,
+            start_y,
             sequence,
             victims,
             map,

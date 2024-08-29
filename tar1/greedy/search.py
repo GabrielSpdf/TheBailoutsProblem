@@ -13,7 +13,6 @@ AC_INCR = {
     7: (-1, -1),  # ul: Up left diagonal
 }
 
-
 COST_LINE = 0.0
 COST_DIAG = 0.0
 
@@ -24,27 +23,35 @@ def adj(a, grid_map):
     x, y = a
     if not grid_map.in_map(a):
         return []
+
     difficulty, seq, adj_info = grid_map.get(a)
     adj = []
+
     for dx, dy in AC_INCR.values():
         if not grid_map.in_map((x + dx, y + dy)):
             continue
+
         wall_info, seq, adj_info = grid_map.get((x + dx, y + dy))
+
         if wall_info == 100:
             continue
+
         target_xy = (x + dx, y + dy)
+
         if dx == 0 or dy == 0:
             step_cost = COST_LINE * difficulty
         else:
             step_cost = COST_DIAG * difficulty
 
         adj.append((target_xy, step_cost))
+
     return adj
 
 
 def cost(u, v):
     x1, y1 = u
     x2, y2 = v
+
     return sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
 
@@ -58,12 +65,16 @@ def search(cost_line, cost_diag, grid_map, s, e):
     open[s] = 0
     parents = {}
     parents[s] = None
+
     while len(open) > 0:
         u = min(open, key=open.get)
         closed[u] = open[u]
+
         if u == e:
             break
+
         open.pop(u)
+
         for v, difficulty in adj(u, grid_map):
             g = closed[u] + difficulty
             h = cost(v, e)
@@ -83,10 +94,11 @@ def search(cost_line, cost_diag, grid_map, s, e):
     difficulty = 0.0
     while e:
         path.append(e)
-        if parents[e]:
+        if e in parents and parents[e]:
             e, step_difficulty = parents[e]
             difficulty += step_difficulty
         else:
+            # print(f"Caminho para {e} não encontrado")
             e = None
 
     path.reverse()

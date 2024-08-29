@@ -29,6 +29,8 @@ class Rescuer(AbstAgent):
         #self.model = xgb.XGBClassifier()  
         #self.model.load_model('/home/gaspad/prog/SistemasInteligentes/tar1/greedy/estimate/modelo_xgboost.json')
         self.env = env
+        self.start_x = self.env.dic["BASE"][0]
+        self.start_y = self.env.dic["BASE"][1]
         self.count = 0
         self.victims = {}         # list of found victims
         self.plan = []              # a list of planned actions
@@ -71,8 +73,8 @@ class Rescuer(AbstAgent):
         print(json.dumps(self.victims, indent=4))
         self.__planner()
         i = 1
-        self.plan_x = 0
-        self.plan_y = 0
+        self.plan_x = self.env.dic["BASE"][0]
+        self.plan_y = self.env.dic["BASE"][1]
         for a in self.plan:
             self.plan_x += a[0]
             self.plan_y += a[1]
@@ -98,6 +100,8 @@ class Rescuer(AbstAgent):
             print("generation ", i)
             for sequence in population:
                 score = evaluate_sequence(
+                    self.start_x,
+                    self.start_y,
                     sequence,
                     self.victims,
                     self.map,
@@ -114,6 +118,8 @@ class Rescuer(AbstAgent):
             population = selected + children
             print("population_size: ", len(population))
         best = select_the_best(
+            self.start_x,
+            self.start_y,
             population,
             self.victims,
             self.map,
@@ -125,17 +131,24 @@ class Rescuer(AbstAgent):
         best = best[1]
         print("best sequence: ", best)
         best = seq_list2dict(best, self.victims)
-        current_pos = (0, 0)
+        current_pos = (self.env.dic["BASE"][0],self.env.dic["BASE"][1])
         for victim in best:
             next_plan, time_required = search(
                 self.COST_LINE,
                 self.COST_DIAG,
                 self.map,
                 current_pos,
-                victim[1],
+                victim[1]
             )
+            
+            # print(f"victim: {victim}")
+            # print(f"victim[0]: {victim[0]}")
+            # print(f"victim[1]: {victim[1]}")
+            # print(f"victim[2]: {victim[2]}")
+            # exit()
+
             comeback_plan, time_to_go_back = search(
-                self.COST_LINE, self.COST_DIAG, self.map, victim[1], (0, 0)
+                self.COST_LINE, self.COST_DIAG, self.map, victim[1], (self.env.dic["BASE"][0],self.env.dic["BASE"][1])
             )
             time_required += self.COST_FIRST_AID
             if (
@@ -148,7 +161,7 @@ class Rescuer(AbstAgent):
             current_pos = victim[1]
 
         comeback_plan, time_to_go_back = search(
-            self.COST_LINE, self.COST_DIAG, self.map, current_pos, (0, 0)
+            self.COST_LINE, self.COST_DIAG, self.map, current_pos, (self.env.dic["BASE"][0],self.env.dic["BASE"][1])
         )
         self.plan = self.plan + comeback_plan
 

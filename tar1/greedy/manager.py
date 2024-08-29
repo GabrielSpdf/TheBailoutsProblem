@@ -38,7 +38,6 @@ class Manager():
         """Atribui as vítimas de cada cluster aos resgatadores."""
         self.resc1.add_victims(centroids[0][2])
         self.resc2.add_victims(centroids[1][2])
-
         self.resc3.add_victims(centroids[2][2])
         self.resc4.add_victims(centroids[3][2])
 
@@ -65,7 +64,7 @@ class Manager():
             X_test = np.array([value[1][3], value[1][4], value[1][5]]).reshape(1, -1)
             predicted_class = int(self.model.predict(X_test)[0])
 
-            value[1].append(predicted_class)
+            value[1].append(predicted_class+1)
 
             self.victims[key] = (value[0], value[1])
 
