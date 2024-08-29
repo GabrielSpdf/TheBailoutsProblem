@@ -22,6 +22,7 @@ def evaluate_sequence(
         3: 2,
         4: 1
     }
+
     for seq in sequence:
         victim_index = next(
             (index for (index, v) in enumerate(victims) if v[0] == seq), None
@@ -38,7 +39,7 @@ def evaluate_sequence(
         if plan_walk_time + time_required + time_to_go_back > plan_rtime - 40:
             continue
 
-        #score += 100 - victim[2][-1]
+        # score += 100 - victim[2][-1]
         victim_class = victim[2][-1] 
         weight = class_weights.get(victim_class, 1)
         score += (100 - victim[2][-1]) * weight 

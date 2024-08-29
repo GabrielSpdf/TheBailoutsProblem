@@ -34,7 +34,7 @@ import csv
 ABS_COORDINATES = True
 
 # Input files and folders
-data_folder = "./datasets/data_42v_20x20"
+data_folder = "./datasets/data_408v_94x94"
 env_file = "env_config.txt"
 obst_file = "env_obst.txt"
 victims_file = "env_victims.txt"
