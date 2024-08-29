@@ -1,0 +1,93 @@
+Fundamentação
+
+    Classificador: Árvore de Decisão (XGBoost)
+        Tipo de algoritmo: Aprendizado supervisionado, baseado em árvores de decisão.
+        Conceito: Conjunto de árvores de decisão usadas para classificação, onde cada árvore vota para determinar a classe final.
+        Referências: Algoritmos de boosting, como o XGBoost.
+
+    Classificador: Rede Neural (MLP)
+        Tipo de algoritmo: Aprendizado supervisionado, modelo de rede neural artificial.
+        Conceito: Conjunto de neurônios organizados em camadas, onde cada neurônio aplica uma função de ativação sobre a soma ponderada das entradas.
+        Referências: Redes neurais feedforward, MLP (Multi-Layer Perceptron).
+
+Metodologia
+
+    Modelagem
+
+        Classificador: Árvore de Decisão (XGBoost)
+            Características ou features: qPA, pulso, frequência respiratória.
+            Pré-processamento (normalização): Não aplicável, XGBoost não requer normalização.
+            Saída (qual a saída e o formato): Classe de gravidade das vítimas (0, 1, 2, 3).
+
+        Classificador: Rede Neural (MLP)
+            Características ou features: qPA, pulso, frequência respiratória.
+            Pré-processamento (normalização): Escala dos dados com StandardScaler.
+            Saída (qual a saída e o formato): Classe de gravidade das vítimas (0, 1, 2, 3).
+            Tipo de Rede: MLP (Multi-Layer Perceptron).
+
+    Parametrizações Utilizadas
+        Classificador: Árvore de Decisão (XGBoost)
+            Índice: entropia ou gini: Utiliza critérios como entropia ou ganho de informação, mas no caso do XGBoost, usa boosting com várias árvores.
+            Poda: O XGBoost automaticamente lida com a complexidade do modelo via parâmetros de regularização.
+            Min samples per leaf: Controlado via parâmetros como min_child_weight.
+        Classificador: Rede Neural (MLP)
+            Topologia e configuração das camadas: Configurada via otimização bayesiana (ex., hidden_layer_sizes).
+            Função de ativação dos neurônios: relu, tanh, ou logistic, conforme otimização.
+            Taxa de aprendizado: Otimizada via bayesiana (learning_rate_init).
+            Momento: Não foi utilizado especificamente, mas pode ser considerado parte do solver.
+            Solver utilizado com justificativa de uso: Otimizado entre adam, sgd, ou lbfgs.
+
+Treino e Validação
+
+    Classificador: Árvore de Decisão (XGBoost)
+        Dataset: 4.000 vítimas para treino/validação e 800 vítimas para teste.
+        Como proceder treino e validação: Utilizou validação cruzada para avaliação de performance durante a otimização bayesiana.
+        Como escolher o melhor modelo: Acurácia como métrica principal, F1-score para avaliação detalhada.
+
+    Classificador: Rede Neural (MLP)
+        Dataset: 4.000 vítimas para treino/validação e 800 vítimas para teste.
+        Como proceder treino e validação: Validação cruzada com dados normalizados durante a otimização bayesiana.
+        Critérios de parada: Número máximo de iterações (max_iter) e a melhoria do score na validação cruzada.
+        Como escolher o melhor modelo: Acurácia e F1-score, com especial atenção à Classe 3.
+
+Resultados
+
+    Classificador: Árvore de Decisão (XGBoost)
+        Precision: Elevada, especialmente para as classes mais representadas.
+        Recall: Variável, mas bom desempenho geral.
+        F-measure: Bom equilíbrio entre precisão e recall, mas inferior ao MLP para Classe 3.
+        Acurácia: 0.95 na validação, 0.96 no teste.
+        Matriz de confusão: Mostra dificuldades em classes menos representadas como a Classe 3.
+        Quadro comparativo das parametrizações: Otimização bayesiana melhorou o desempenho geral.
+
+    Classificador: Rede Neural (MLP)
+        Precision: Geralmente mais alta, especialmente em Classe 3.
+        Recall: Melhoria visível, melhor que XGBoost em classes minoritárias.
+        F-measure: Superior, especialmente em Classe 3.
+        Acurácia: 0.97 tanto na validação quanto no teste.
+        Matriz de confusão: Menor confusão, especialmente para Classe 3.
+        Quadro comparativo das parametrizações: Otimização bayesiana melhorou o desempenho geral.
+
+Análise
+
+    Classificador: Árvore de Decisão (XGBoost)
+        Erros de classificação: Mais comum em Classe 3.
+        Overfitting: Controlado com regularização, mas menos eficaz em classes com poucos exemplos.
+        Melhorias possíveis: Aumentar a regularização e ajustar ainda mais os parâmetros para classes minoritárias.
+
+    Classificador: Rede Neural (MLP)
+        Erros de classificação: Menos frequente, melhor em classes desbalanceadas.
+        Overfitting: Menos evidente, mas possível com redes complexas.
+        Melhorias possíveis: Ajustes na topologia e dados de treinamento adicionais para otimizar ainda mais a Classe 3.
+
+Implementação
+
+    Classificador: Árvore de Decisão (XGBoost)
+        Na mão ou biblioteca: Biblioteca (XGBoost).
+        Cumpriu os requisitos da especificação?: Sim, geração de arquivos .json e integração com outros sistemas.
+        Integração no sistema multiagente: Suave, utilizando modelo treinado para fazer previsões.
+
+    Classificador: Rede Neural (MLP)
+        Na mão ou biblioteca: Biblioteca (sklearn).
+        Cumpriu os requisitos da especificação?: Sim, geração de arquivos .pkl e integração com outros sistemas.
+        Integração no sistema multiagente: Suave, modelo treinado usado para previsões em tempo real.

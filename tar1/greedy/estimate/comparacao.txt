@@ -1,0 +1,25 @@
+Comparação entre MLP e XGBoost
+
+	- Objetivo: Ambos os modelos visam classificar a gravidade das vítimas em quatro classes, utilizando otimização bayesiana para ajustar os hiperparâmetros.
+
+    - Pré-processamento:
+        MLP: Utiliza StandardScaler para normalizar os dados, essencial para o desempenho das redes neurais.
+        XGBoost: Não necessita de normalização devido à natureza das árvores de decisão.
+
+    - Otimização Bayesiana:
+        MLP: Otimiza parâmetros como o tamanho da camada oculta, função de ativação e taxa de aprendizado, ajustando a arquitetura da rede.
+        XGBoost: Ajusta a profundidade das árvores, taxa de aprendizado, regularização, entre outros.
+
+    - Resultados:
+        MLP:
+            Validação: Acurácia de 0.97, com melhoria significativa na Classe 3 (F1-score de 0.80).
+            Teste: Acurácia de 0.97, Classe 3 com F1-score de 0.86.
+        XGBoost:
+            Validação: Acurácia de 0.95, Classe 3 com F1-score de 0.74.
+            Teste: Acurácia de 0.96, Classe 3 com F1-score de 0.77.
+
+    - Conclusão:
+        MLP oferece melhor desempenho geral, especialmente em classes desbalanceadas como a Classe 3.
+        XGBoost é mais eficiente em termos de tempo de treinamento e continua sendo uma opção robusta, embora ligeiramente menos precisa que o MLP.
+
+Otimizacação Bayesiana: A otimização bayesiana é uma técnica usada para encontrar os melhores hiperparâmetros de um modelo de forma eficiente. Em vez de testar todas as combinações possíveis (como em grid search), ela constrói um modelo probabilístico que prevê a performance do modelo com base nos hiperparâmetros escolhidos. A cada iteração, a otimização bayesiana utiliza essa previsão para escolher os próximos conjuntos de hiperparâmetros a serem testados, priorizando as combinações que provavelmente darão os melhores resultados. É uma abordagem mais inteligente e rápida para ajustar modelos complexos

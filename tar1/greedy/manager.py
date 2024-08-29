@@ -1,12 +1,18 @@
 import numpy as np
 import xgboost as xgb
+import joblib
 from map import Map
 from cluster import *
 
 class Manager():
     def __init__(self, resc1, resc2, resc3, resc4):
+        # Utilizar classificador 
         self.model = xgb.XGBClassifier()  
         self.model.load_model('/home/gaspad/prog/SistemasInteligentes/tar1/greedy/estimate/modelo_xgboost.json')
+        
+        # Utilizar MLP
+        # self.model = joblib.load('/home/gaspad/prog/SistemasInteligentes/tar1/greedy/estimate/modelo_mlp.pkl')
+
         self.resc1 = resc1
         self.resc2 = resc2
         self.resc3 = resc3
