@@ -14,6 +14,14 @@ def evaluate_sequence(
     plan_rtime = tlim
     current_pos = (start_x, start_y)
     score = 0.0
+
+    # Prioridade para vitimas mais feridas
+    class_weights = {
+        1: 6,
+        2: 3,
+        3: 2,
+        4: 1
+    }
     for seq in sequence:
         victim_index = next(
             (index for (index, v) in enumerate(victims) if v[0] == seq), None
@@ -29,7 +37,12 @@ def evaluate_sequence(
         time_required += cost_first_aid
         if plan_walk_time + time_required + time_to_go_back > plan_rtime - 40:
             continue
-        score += 100 - victim[2][-1]
+
+        #score += 100 - victim[2][-1]
+        victim_class = victim[2][-1] 
+        weight = class_weights.get(victim_class, 1)
+        score += (100 - victim[2][-1]) * weight 
+
         plan_walk_time += time_required
         plan = plan + next_plan
         current_pos = victim[1]
