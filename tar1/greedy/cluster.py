@@ -63,7 +63,7 @@ def k_means_pp(victims, clusters=N_CLUSTER, max_iter=MAX_IT, tolerance=0.0001):
                     closest = i
             
             # Adiciona a vítima ao vetor do centroide mais próximo
-            centroids[closest][2].append((id, coord, severity[-1]))  # severity[-1] é a classe
+            centroids[closest][2].append((id, coord, severity))  # severity[-1] é a classe
 
         
         # Recalcula os centroides
@@ -71,7 +71,8 @@ def k_means_pp(victims, clusters=N_CLUSTER, max_iter=MAX_IT, tolerance=0.0001):
             weighted_x, weighted_y = 0, 0
             total_weight = 0
 
-            for _, (x, y), class_severity in c[2]:
+            for _, (x, y), idx_severity in c[2]:
+                class_severity = idx_severity[-1]
                 weight = 0
                 if class_severity == 0:
                     weight = 6

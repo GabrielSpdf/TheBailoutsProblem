@@ -7,13 +7,13 @@
 import os
 import random
 import numpy as np
-import xgboost as xgb
+from search import search
 from map import Map
-#from sklearn.metrics import silhouette_score
 from vs.abstract_agent import AbstAgent
 from vs.physical_agent import PhysAgent
 from vs.constants import VS
 from abc import ABC, abstractmethod
+from genetic import evaluate_sequence, initialize_random, reproduce_pop, select_best, select_the_best, seq_list2dict
 
 ## Classe que define o Agente Rescuer com um plano fixo
 class Rescuer(AbstAgent):
@@ -30,7 +30,6 @@ class Rescuer(AbstAgent):
         #self.model.load_model('/home/gaspad/prog/SistemasInteligentes/tar1/greedy/estimate/modelo_xgboost.json')
         self.env = env
         self.count = 0
-        self.data_com = [0, 1, 2, 3]
         self.victims = {}         # list of found victims
         self.plan = []              # a list of planned actions
         self.plan_x = self.env.dic["BASE"][0]             # the x position of the rescuer during the planning phase
@@ -41,7 +40,6 @@ class Rescuer(AbstAgent):
         self.x = self.env.dic["BASE"][0]                  # the current x position of the rescuer when executing the plan
         self.y = self.env.dic["BASE"][1]                  # the current y position of the rescuer when executing the plan
         self.map_counter = 0        # Verificar quantos mapas o agente ja recebeu
-
                 
         # Starts in IDLE state.
         # It changes to ACTIVE when the map arrives
@@ -52,182 +50,111 @@ class Rescuer(AbstAgent):
         self.map = map
 
     def add_victims(self, victims):
-        for victim in victims:
-            seq, data = victim[0], victim[1:]
-            #X_test = np.array([data[1][3], data[1][4], data[1][5]]).reshape(1, -1)
-            #predicted_class = int(self.model.predict(X_test)[0])
+        self.victims = victims
+        # for victim in victims:
+        #     seq, data = victim[0], victim[1:]
+            
+        #     print(f"seq: {seq}")
+        #     print(f"data: {data}")
+            # print(f"Vítima {seq}: Coordenadas {data[0]}, Severidade {data[1]}")
 
-            #data[1].append(predicted_class)
-
-            # print(f"Data: {data}")
-
-            print(f"Vítima {seq}: Coordenadas {data[0]}, Severidade {data[1]}")
-
-    # ALTERAR
-    def euclidean_distance(self, point1, point2):
-        return ((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2) ** 0.5
-    
-    # ALTERAR
-    def assign_rescuer_to_nearest_cluster(self, rescuer_position, cluster):
-        centroid_x = cluster[0]
-        centroid_y = cluster[1]
-
-        distance_to_centroid = self.euclidean_distance(rescuer_position, (centroid_x, centroid_y))
-
-        return cluster
-
-    # ALTERAR
-    def rescue_victims_within_cluster(self, rescuer_position, cluster):
-        # Lista para guardar a ordem de resgate
-        rescue_order = []
-        
-        # Obter a lista de vítimas do cluster (presumindo que cada vítima é um par (id, (x, y)))
-        victims = cluster[2]
-
-        # Continuar resgatando as vítimas mais próximas até que todas tenham sido resgatadas
-        while victims:
-            # Encontrar a próxima vítima mais próxima do resgatador ou do último resgate
-            next_victim = min(victims, key=lambda v: self.euclidean_distance(rescuer_position, v[1]))
-            rescue_order.append(next_victim)
-            # Atualizar a posição do resgatador para a posição da vítima resgatada
-            rescuer_position = next_victim[1]
-            # Remover a vítima resgatada da lista
-            victims.remove(next_victim)
-
-        return rescue_order
-    
-    # ALTERAR
-    def plan_rescue_for_all_rescuers(self, rescuer_position, clusters):
-        all_rescue_plans = []
-        # Atribuir o resgatador ao centróide mais próximo
-        nearest_cluster = self.assign_rescuer_to_nearest_cluster(rescuer_position, clusters)
-        # Obter a ordem de resgate dentro desse cluster
-        rescue_order = self.rescue_victims_within_cluster(rescuer_position, nearest_cluster)
-        # Adicionar a ordem de resgate ao plano geral
-        all_rescue_plans.append(rescue_order)
-
-        return all_rescue_plans
-
-
-    def go_save_victims(self, map, victims):
-        """ The explorer sends the map containing the walls and
+    def go_save_victims(self):
+        """The explorer sends the map containing the walls and
         victims' location. The rescuer becomes ACTIVE. From now,
         the deliberate method is called by the environment"""
 
         print(f"\n\n*** R E S C U E R ***")
-        self.map = map
-        print(f"{self.NAME} Map received from the explorer")
-        self.map.draw()
+        # self.map = map
+        # self.victims = victims
+        import json
 
-        print()
-        #print(f"{self.NAME} List of found victims received from the explorer")
-        self.victims = victims
-
-        for seq, data in self.victims.items():
-            coord, vital_signals = data
-            x, y = coord
-            print(f"{self.NAME} Victim seq number: {seq} at ({x}, {y}) vs: {vital_signals}")
-
-        # TUDO COMECA AQUI
-        exit()
-
-        #############################################################################
-        #Pega apenas 1 posicao para o resgatador em questao
-        cluster_to_rescue = clusters[self.data_com.pop()]
-
-        #Vetor com a prioridade do resgatador atual
-        #plan_rescue_for_all_rescuers -> assign -> rescue_victims
-        rescue_plans = self.plan_rescue_for_all_rescuers((0,0), cluster_to_rescue)
-        print(f"rescue_plans: {rescue_plans}")
-
-        #print(f"{self.NAME} time limit to rescue {self.plan_rtime}")
-
+        print(json.dumps(self.victims, indent=4))
         self.__planner()
-        print(f"{self.NAME} PLAN")
         i = 1
         self.plan_x = 0
         self.plan_y = 0
         for a in self.plan:
             self.plan_x += a[0]
             self.plan_y += a[1]
-            print(f"{self.NAME} {i}) dxy=({a[0]}, {a[1]}) vic: a[2] => at({self.plan_x}, {self.plan_y})")
             i += 1
 
         print(f"{self.NAME} END OF PLAN")
-                  
+
         self.set_state(VS.ACTIVE)
-       
-    # ALTERAR
-    def __depth_search(self, actions_res):
-        enough_time = True
-        ##print(f"\n{self.NAME} actions results: {actions_res}")
-        for i, ar in enumerate(actions_res):
-
-            if ar != VS.CLEAR:
-                ##print(f"{self.NAME} {i} not clear")
-                continue
-
-            # planning the walk
-            dx, dy = Rescuer.AC_INCR[i]  # get the increments for the possible action
-            target_xy = (self.plan_x + dx, self.plan_y + dy)
-
-            # checks if the explorer has not visited the target position
-            if not self.map.in_map(target_xy):
-                ##print(f"{self.NAME} target position not explored: {target_xy}")
-                continue
-
-            # checks if the target position is already planned to be visited 
-            if (target_xy in self.plan_visited):
-                ##print(f"{self.NAME} target position already visited: {target_xy}")
-                continue
-
-            # Now, the rescuer can plan to walk to the target position
-            self.plan_x += dx
-            self.plan_y += dy
-            difficulty, vic_seq, next_actions_res = self.map.get((self.plan_x, self.plan_y))
-            #print(f"{self.NAME}: planning to go to ({self.plan_x}, {self.plan_y})")
-
-            if dx == 0 or dy == 0:
-                step_cost = self.COST_LINE * difficulty
-            else:
-                step_cost = self.COST_DIAG * difficulty
-
-            #print(f"{self.NAME}: difficulty {difficulty}, step cost {step_cost}")
-            #print(f"{self.NAME}: accumulated walk time {self.plan_walk_time}, rtime {self.plan_rtime}")
-
-            # check if there is enough remaining time to walk back to the base
-            if self.plan_walk_time + step_cost > self.plan_rtime:
-                enough_time = False
-                #print(f"{self.NAME}: no enough time to go to ({self.plan_x}, {self.plan_y})")
-            
-            if enough_time:
-                # the rescuer has time to go to the next position: update walk time and remaining time
-                self.plan_walk_time += step_cost
-                self.plan_rtime -= step_cost
-                self.plan_visited.add((self.plan_x, self.plan_y))
-
-                if vic_seq == VS.NO_VICTIM:
-                    self.plan.append((dx, dy, False)) # walk only
-                    #print(f"{self.NAME}: added to the plan, walk to ({self.plan_x}, {self.plan_y}, False)")
-
-                if vic_seq != VS.NO_VICTIM:
-                    # checks if there is enough remaining time to rescue the victim and come back to the base
-                    if self.plan_rtime - self.COST_FIRST_AID < self.plan_walk_time:
-                        print(f"{self.NAME}: no enough time to rescue the victim")
-                        enough_time = False
-                    else:
-                        self.plan.append((dx, dy, True))
-                        #print(f"{self.NAME}:added to the plan, walk to and rescue victim({self.plan_x}, {self.plan_y}, True)")
-                        self.plan_rtime -= self.COST_FIRST_AID
-
-            # let's see what the agent can do in the next position
-            if enough_time:
-                self.__depth_search(self.map.get((self.plan_x, self.plan_y))[2]) # actions results
-            else:
-                return
-
-        return
     
+    def __a_star(self):
+        print(f"self.victims: {self.victims}")
+        sorted_victims = sorted(self.victims, key=lambda x: x[2][-1])
+        if len(sorted_victims) == 0:
+            return
+
+        population_size = 5
+        population = initialize_random(self.victims, population_size)
+        print("population_size: ", len(population))
+        n_generations = 10
+        scores = []
+        for i in range(n_generations):
+            scores.clear()
+            print("generation ", i)
+            for sequence in population:
+                score = evaluate_sequence(
+                    sequence,
+                    self.victims,
+                    self.map,
+                    self.COST_LINE,
+                    self.COST_DIAG,
+                    self.TLIM,
+                    self.COST_FIRST_AID,
+                )
+                scores.append((score, sequence))
+            selected = select_best(scores)
+            print("selected size: ", len(selected))
+            children = reproduce_pop(selected)
+            print("children size: ", len(children))
+            population = selected + children
+            print("population_size: ", len(population))
+        best = select_the_best(
+            population,
+            self.victims,
+            self.map,
+            self.COST_LINE,
+            self.COST_DIAG,
+            self.TLIM,
+            self.COST_FIRST_AID,
+        )
+        best = best[1]
+        print("best sequence: ", best)
+        best = seq_list2dict(best, self.victims)
+        current_pos = (0, 0)
+        for victim in best:
+            next_plan, time_required = search(
+                self.COST_LINE,
+                self.COST_DIAG,
+                self.map,
+                current_pos,
+                victim[1],
+            )
+            comeback_plan, time_to_go_back = search(
+                self.COST_LINE, self.COST_DIAG, self.map, victim[1], (0, 0)
+            )
+            time_required += self.COST_FIRST_AID
+            if (
+                self.plan_walk_time + time_required + time_to_go_back
+                > self.plan_rtime - 40
+            ):
+                continue
+            self.plan_walk_time += time_required
+            self.plan = self.plan + next_plan
+            current_pos = victim[1]
+
+        comeback_plan, time_to_go_back = search(
+            self.COST_LINE, self.COST_DIAG, self.map, current_pos, (0, 0)
+        )
+        self.plan = self.plan + comeback_plan
+
+        print(self.plan)
+        return
+
     def __planner(self):
         """ A private method that calculates the walk actions in a OFF-LINE MANNER to rescue the
         victims. Further actions may be necessary and should be added in the
@@ -243,21 +170,7 @@ class Rescuer(AbstAgent):
         # For instance (0,1,True) means the agent walk to (x+0,y+1) and after walking, it leaves the kit.
 
         self.plan_visited.add((self.env.dic["BASE"][0],self.env.dic["BASE"][1])) # always start from the base, so it is already visited
-        difficulty, vic_seq, actions_res = self.map.get((self.env.dic["BASE"][0],self.env.dic["BASE"][1]))
-        self.__depth_search(actions_res)
-
-        # push actions into the plan to come back to the base
-        if self.plan == []:
-            return
-
-        come_back_plan = []
-
-        for a in reversed(self.plan):
-            # triple: dx, dy, no victim - when coming back do not rescue any victim
-            come_back_plan.append((a[0]*-1, a[1]*-1, False))
-
-        self.plan = self.plan + come_back_plan
-        
+        self.__a_star()
         
     def deliberate(self) -> bool:
         """ This is the choice of the next action. The simulator calls this

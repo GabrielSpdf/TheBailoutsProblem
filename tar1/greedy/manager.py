@@ -38,6 +38,7 @@ class Manager():
         """Atribui as vítimas de cada cluster aos resgatadores."""
         self.resc1.add_victims(centroids[0][2])
         self.resc2.add_victims(centroids[1][2])
+
         self.resc3.add_victims(centroids[2][2])
         self.resc4.add_victims(centroids[3][2])
 
@@ -47,13 +48,19 @@ class Manager():
         self.resc2.load_map(self.map)
         self.resc3.load_map(self.map)
         self.resc4.load_map(self.map)
+        print(f"Maps received from the explorer")
 
     def add_man_victims(self, victims):
         for seq, data in victims.items():
             self.victims[seq] = data
 
+    def go_rescuer(self):
+        self.resc1.go_save_victims()
+        self.resc2.go_save_victims()
+        self.resc3.go_save_victims()
+        self.resc4.go_save_victims()
+
     def plan_to_rescuer(self):
-        # print(f"self.victims: {self.victims}")
         for key, value in self.victims.items():
             X_test = np.array([value[1][3], value[1][4], value[1][5]]).reshape(1, -1)
             predicted_class = int(self.model.predict(X_test)[0])
@@ -62,11 +69,14 @@ class Manager():
 
             self.victims[key] = (value[0], value[1])
 
+
         clusters = k_means_pp(self.victims)
         save_clusters(clusters)
-
         save_plot(clusters)
 
         self.assign_victims_to_rescuers(clusters)
         self.assign_map_to_rescuers()
+        # print(f"map:")
+        # self.map.draw()
+        self.go_rescuer()
 

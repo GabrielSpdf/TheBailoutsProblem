@@ -87,4 +87,4 @@ class Map:
             print(row)
 
 
-    
+
